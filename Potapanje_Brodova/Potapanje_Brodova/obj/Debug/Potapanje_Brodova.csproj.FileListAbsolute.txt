@@ -1,0 +1,7 @@
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Potapanje_Brodova\bin\Debug\Potapanje_Brodova.exe.config
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Potapanje_Brodova\bin\Debug\Potapanje_Brodova.exe
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Potapanje_Brodova\bin\Debug\Potapanje_Brodova.pdb
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Potapanje_Brodova\obj\Debug\Potapanje_Brodova.csproj.AssemblyReference.cache
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Potapanje_Brodova\obj\Debug\Potapanje_Brodova.csproj.CoreCompileInputs.cache
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Potapanje_Brodova\obj\Debug\Potapanje_Brodova.exe
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Potapanje_Brodova\obj\Debug\Potapanje_Brodova.pdb
