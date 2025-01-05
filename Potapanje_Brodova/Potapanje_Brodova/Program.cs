@@ -17,8 +17,9 @@ namespace Server
             
             Console.WriteLine("Dobrodosli na server!");
             Console.WriteLine("Uneiste broj igraca koji ce da igraju:");
-            Console.WriteLine("Cekam prijave Igraca:");
             int.TryParse(Console.ReadLine(), out MaxBrojIgraca);
+            Console.WriteLine("Cekam prijave Igraca:");
+
 
             ucitajIgrace();
 
