@@ -1,5 +1,6 @@
 # Visual Studio specific
 .vs/
+.v17/
 *.vcxproj.user
 *.vcxproj.filters
 *.user
