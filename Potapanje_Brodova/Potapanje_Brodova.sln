@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Potapanje_Brodova", "Potapanje_Brodova\Potapanje_Brodova.csproj", "{C75195FF-12C3-474C-A097-B1C5F47F7EB9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Potapanje_Brodova\Server.csproj", "{C75195FF-12C3-474C-A097-B1C5F47F7EB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{B215BD35-936E-4209-8567-D53A10459EDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{C75195FF-12C3-474C-A097-B1C5F47F7EB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C75195FF-12C3-474C-A097-B1C5F47F7EB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C75195FF-12C3-474C-A097-B1C5F47F7EB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B215BD35-936E-4209-8567-D53A10459EDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B215BD35-936E-4209-8567-D53A10459EDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B215BD35-936E-4209-8567-D53A10459EDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B215BD35-936E-4209-8567-D53A10459EDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

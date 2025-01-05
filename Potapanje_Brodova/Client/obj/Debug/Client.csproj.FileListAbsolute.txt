@@ -1,0 +1,7 @@
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Client\bin\Debug\Client.exe.config
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Client\bin\Debug\Client.exe
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Client\bin\Debug\Client.pdb
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Client\obj\Debug\Client.csproj.AssemblyReference.cache
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Client\obj\Debug\Client.csproj.CoreCompileInputs.cache
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Client\obj\Debug\Client.exe
+C:\Users\marko\RacMrezeProjekat\Potapanje_Brodova\Client\obj\Debug\Client.pdb

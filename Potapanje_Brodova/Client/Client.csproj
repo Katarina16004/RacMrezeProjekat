@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C75195FF-12C3-474C-A097-B1C5F47F7EB9}</ProjectGuid>
+    <ProjectGuid>{B215BD35-936E-4209-8567-D53A10459EDD}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Potapanje_Brodova</RootNamespace>
-    <AssemblyName>Potapanje_Brodova</AssemblyName>
+    <RootNamespace>Client</RootNamespace>
+    <AssemblyName>Client</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
