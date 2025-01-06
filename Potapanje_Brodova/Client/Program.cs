@@ -20,7 +20,8 @@ namespace Server
             Console.WriteLine("Pozdrav od Clienta");
             PrikaziMeni();
 
-            
+            UspostaviTCPKonekciju();
+
             Console.ReadKey();
         }
         static void PrikaziMeni()
@@ -62,6 +63,8 @@ namespace Server
 
         }
 
+        //Salje prijavu server i ceka odgovor, u slucaju da je pozitivan odgovor,
+        //nastavlja sa izvrsavanjem, u slucaju negativnog odgovara vraca na meni
         static void Prijava() 
         {
             if (ime == null)
@@ -98,6 +101,12 @@ namespace Server
             {
                 socket.Close();
             }
+
+        }
+
+        //TODO uspostaviti konekciju sa serverom, nakon toga postaviti brodove na tablu
+        private static void UspostaviTCPKonekciju()
+        {
 
         }
     }

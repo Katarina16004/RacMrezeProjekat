@@ -11,7 +11,11 @@ namespace Server
     internal class Program
     {
         private static List<Klijent> Klijenti = new List<Klijent>();
-        static int MaxBrojIgraca = 0;
+        private static int MaxBrojIgraca = 0;
+        private static int VelicinaTable = 0;
+        private static int MaxUzastopnihGresaka = 0;
+
+
         static void Main(string[] args)
         {
             
@@ -21,12 +25,22 @@ namespace Server
             Console.WriteLine("Cekam prijave Igraca:");
 
 
-            ucitajIgrace();
+            UcitajIgrace();
+            
+            Console.WriteLine("Svi igraci su spremni za igru!");
+            Console.WriteLine("Uneiste dimenziju table:");
+            int.TryParse((string)Console.ReadLine(),out VelicinaTable);
+            Console.WriteLine("Unesite maksimalan broj uzastopnih gresaka:");
+            int.TryParse((string)Console.ReadLine(), out MaxUzastopnihGresaka);
+
+            UspostaviTCPKonekciju();
 
             Console.ReadKey();
         }
 
-        static void ucitajIgrace()
+        //Ucitava igrace, proverava da li neko sa tim imenom vec prijavljen, ako nije ubacuje,
+        //ako jeste odbija prijavu i salje poruku nazad
+        static void UcitajIgrace()
         {
 
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -43,7 +57,8 @@ namespace Server
                     string poruka = Encoding.UTF8.GetString(prijemniBafer, 0, brBajta);
                     Console.WriteLine($"Pokusaj prijave od {posiljaocEP}");
                     string ime = poruka.Substring(7);
-                    string errorMessage = null; 
+                    string errorMessage = null;
+                    bool postojiKlijent = false;
                    
                     if (ime.Length == 0)
                     {
@@ -60,12 +75,17 @@ namespace Server
                         {
                             Console.WriteLine("Vec postoji client sa datim imenom");
                             errorMessage = "Vec postoji client sa datim imenom";
+                            postojiKlijent= true;
                             break;
                         }
                     }
-                    
-                    Klijenti.Add(klijent);
-                    Console.WriteLine("Ubacen klijent!");
+
+                    if(!postojiKlijent)
+                    {
+                        Klijenti.Add(klijent);
+                        Console.WriteLine("Ubacen klijent!");
+                    }
+
                     Console.WriteLine("Do sada su ubaceni:");
                     foreach (Klijent k in Klijenti) {
                         Console.WriteLine(k);
@@ -91,6 +111,13 @@ namespace Server
 
             } while (Klijenti.Count() < MaxBrojIgraca);
             serverSocket.Close();
+        }
+
+        //TODO potrebna konekacija sa svima preko jednog porta - multipleksiranje uticnice,
+        //nakon toga, obavestiti igrace o osnovnim parametrima igre
+        private static void UspostaviTCPKonekciju()
+        {
+
         }
     }
 }
