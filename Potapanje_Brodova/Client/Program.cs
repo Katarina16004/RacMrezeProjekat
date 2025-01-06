@@ -19,7 +19,7 @@ namespace Server
         {
             Console.WriteLine("Pozdrav od Clienta");
             PrikaziMeni();
-            Prijava();
+
             
             Console.ReadKey();
         }
@@ -39,6 +39,7 @@ namespace Server
                     case 1:
                         UnesiIme();
                         unos = true;
+                        Prijava();
                         break;
                     case 2:
                         Console.WriteLine("Dovidjenja!");
@@ -61,7 +62,6 @@ namespace Server
 
         }
 
-        //TODO ubaciti i da prima poruku o uspesnoj/ neuspesnoj prijavi.
         static void Prijava() 
         {
             if (ime == null)
@@ -69,11 +69,26 @@ namespace Server
 
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint destination = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 60002);
-            byte[] buffer = Encoding.UTF8.GetBytes("PRIJAVA"+ime);
+            byte[] buffer = new byte[4096];
+            buffer = Encoding.UTF8.GetBytes("PRIJAVA"+ime);
+            byte[] buffer2 = new byte[1024];
+
+            EndPoint posiljaocEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"),0);
 
             try
             {
                 int brBajta = socket.SendTo(buffer, 0, buffer.Length, SocketFlags.None, destination);
+                int primljena = socket.ReceiveFrom(buffer2, ref posiljaocEP);
+                string poruka = Encoding.UTF8.GetString(buffer2);
+                Console.WriteLine(poruka);
+
+                if (poruka.Contains("Neuspesno"))
+                {
+                    PrikaziMeni();
+                }
+                
+                Console.WriteLine("Cekamo na prijavu ostalih igraca!");
+            
             }
             catch (Exception ex)
             {

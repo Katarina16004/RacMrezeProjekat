@@ -54,10 +54,14 @@ namespace Server
 
                     Klijent klijent = new Klijent(ime, posiljaocEP);
 
-                    if (Klijenti.Contains(klijent))
+                    foreach(Klijent k in Klijenti)
                     {
-                        Console.WriteLine("Vec postoji client sa datim imenom");
-                        errorMessage = "Vec postoji client sa datim imenom";
+                        if(k.Ime == ime)
+                        {
+                            Console.WriteLine("Vec postoji client sa datim imenom");
+                            errorMessage = "Vec postoji client sa datim imenom";
+                            break;
+                        }
                     }
                     
                     Klijenti.Add(klijent);
@@ -68,7 +72,7 @@ namespace Server
                     }
 
                     byte[] binarnaPoruka;
-                    if(poruka == null)
+                    if(errorMessage == null)
                     {
                         binarnaPoruka = Encoding.UTF8.GetBytes("Uspesno ubacen na server");
                     }
