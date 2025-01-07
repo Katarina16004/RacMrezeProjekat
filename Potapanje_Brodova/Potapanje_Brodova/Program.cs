@@ -117,7 +117,50 @@ namespace Server
         //nakon toga, obavestiti igrace o osnovnim parametrima igre
         private static void UspostaviTCPKonekciju()
         {
+            Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 55358);
+            serverSocket.Bind(serverEP);
 
+            serverSocket.Listen(MaxBrojIgraca);
+            Socket acceptedSocket = serverSocket.Accept();
+            IPEndPoint clientEP = acceptedSocket.RemoteEndPoint as IPEndPoint;
+
+            byte[] buffer = new byte[1024];
+            while (true)
+            {
+                try
+                {
+                    int brBajta = acceptedSocket.Receive(buffer);
+                    if (brBajta == 0)
+                    {
+                        Console.WriteLine("Klijent je zavrsio sa radom");
+                        break;
+                    }
+                    string poruka = Encoding.UTF8.GetString(buffer);
+                    Console.WriteLine(poruka);
+
+
+                    if (poruka == "kraj")
+                        break;
+
+
+                    Console.WriteLine("Unesite poruku");
+                    string odgovor = Console.ReadLine();
+
+                    brBajta = acceptedSocket.Send(Encoding.UTF8.GetBytes(odgovor));
+                    if (odgovor == "kraj")
+                        break;
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine($"Doslo je do greske {ex}");
+                    break;
+                }
+
+            }
+            acceptedSocket.Close();
+            serverSocket.Close();
         }
+
     }
 }

@@ -107,8 +107,51 @@ namespace Server
         //TODO uspostaviti konekciju sa serverom, nakon toga postaviti brodove na tablu
         private static void UspostaviTCPKonekciju()
         {
+            Thread.Sleep(1000);
+            Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 55358);
+            byte[] buffer = new byte[1024];
+            clientSocket.Connect(ServerEP);
 
+            while (true)
+            {
+                Console.WriteLine("Unesite poruku");
+                try
+                {
+                    string poruka = Console.ReadLine();
+                    int brBajta = clientSocket.Send(Encoding.UTF8.GetBytes(poruka));
+
+                    if (poruka == "kraj")
+                        break;
+
+                    brBajta = clientSocket.Receive(buffer);
+
+                    if (brBajta == 0)
+                    {
+                        Console.WriteLine("Server je zavrsio sa radom");
+                        break;
+                    }
+
+                    string odgovor = Encoding.UTF8.GetString(buffer);
+
+                    Console.WriteLine(odgovor);
+                    if (odgovor == "kraj")
+                        break;
+
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine($"Doslo je do greske tokom slanja:\n{ex}");
+                    break;
+                }
+
+            }
+
+            Console.WriteLine("Klijent zavrsava sa radom");
+            clientSocket.Close();
         }
+
+
     }
 }
 
