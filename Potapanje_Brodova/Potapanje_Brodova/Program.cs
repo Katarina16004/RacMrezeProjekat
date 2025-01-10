@@ -20,7 +20,7 @@ namespace Server
         {
             
             Console.WriteLine("Dobrodosli na server!");
-            Console.WriteLine("Uneiste broj igraca koji ce da igraju:");
+            Console.WriteLine("Unesite broj igraca koji ce da igraju:");
             int.TryParse(Console.ReadLine(), out MaxBrojIgraca);
             Console.WriteLine("Cekam prijave Igraca:");
 
@@ -28,7 +28,7 @@ namespace Server
             UcitajIgrace();
             
             Console.WriteLine("Svi igraci su spremni za igru!");
-            Console.WriteLine("Uneiste dimenziju table:");
+            Console.WriteLine("Unesite dimenziju table:");
             int.TryParse((string)Console.ReadLine(),out VelicinaTable);
             Console.WriteLine("Unesite maksimalan broj uzastopnih gresaka:");
             int.TryParse((string)Console.ReadLine(), out MaxUzastopnihGresaka);
