@@ -119,8 +119,6 @@ namespace Server
             Thread.Sleep(1000);
             Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
-            clientSocket.Blocking = false;
-
             byte[] buffer = new byte[1024];
             Random random = new Random();
 
@@ -135,23 +133,12 @@ namespace Server
                 }
                 catch (SocketException e)
                 {
-                    if (e.SocketErrorCode == SocketError.WouldBlock)
-                    {
-                        if (clientSocket.Poll(100000, SelectMode.SelectWrite))
-                        {
-                            Console.WriteLine("Povezan na server.");
-                            break; 
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine($"SocketException: {e.Message}");
-                        break;
-                    }
+                    Console.WriteLine($"SocketException: {e.Message}");
+                    Console.WriteLine("Pokusavam da se povezem na server...");
+                    Thread.Sleep(random.Next(10, 100));
+
                 }
 
-                Console.WriteLine("Pokusavam da se povezem na server...");
-                Thread.Sleep(random.Next(10, 100)); 
             }
 
 
