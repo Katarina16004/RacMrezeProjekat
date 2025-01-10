@@ -11,6 +11,7 @@ namespace Server
     internal class Program
     {
         private static List<Klijent> Klijenti = new List<Klijent>();
+
         private static int MaxBrojIgraca = 0;
         private static int VelicinaTable = 0;
         private static int MaxUzastopnihGresaka = 0;
@@ -24,15 +25,7 @@ namespace Server
             int.TryParse(Console.ReadLine(), out MaxBrojIgraca);
             Console.WriteLine("Cekam prijave Igraca:");
 
-
             UcitajIgrace();
-            
-            Console.WriteLine("Svi igraci su spremni za igru!");
-            Console.WriteLine("Unesite dimenziju table:");
-            int.TryParse((string)Console.ReadLine(),out VelicinaTable);
-            Console.WriteLine("Unesite maksimalan broj uzastopnih gresaka:");
-            int.TryParse((string)Console.ReadLine(), out MaxUzastopnihGresaka);
-
             UspostaviTCPKonekciju();
 
             Console.ReadKey();
@@ -47,7 +40,7 @@ namespace Server
             IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 60002);
             serverSocket.Bind(serverEP);
             EndPoint posiljaocEP = new IPEndPoint(IPAddress.Any, 0);
-
+            byte[] binarnaPoruka;
             byte[] prijemniBafer = new byte[1024];
             do
             {
@@ -91,7 +84,7 @@ namespace Server
                         Console.WriteLine(k);
                     }
 
-                    byte[] binarnaPoruka;
+                    
                     if(errorMessage == null)
                     {
                         binarnaPoruka = Encoding.UTF8.GetBytes("Uspesno ubacen na server");
@@ -110,7 +103,28 @@ namespace Server
 
 
             } while (Klijenti.Count() < MaxBrojIgraca);
+
+
+            UnesiParametreIgre();
+
+             //PosaljiSignalSpreman
+            foreach(Klijent k in Klijenti)
+            {
+               binarnaPoruka = Encoding.UTF8.GetBytes("SPREMAN");
+               serverSocket.SendTo(binarnaPoruka, 0, binarnaPoruka.Length, SocketFlags.None, k.IPAdresa);
+            }
+            
+            
             serverSocket.Close();
+        }
+
+        private static void UnesiParametreIgre()
+        {
+            Console.WriteLine("Svi igraci su spremni za igru!");
+            Console.WriteLine("Unesite dimenziju table:");
+            int.TryParse((string)Console.ReadLine(), out VelicinaTable);
+            Console.WriteLine("Unesite maksimalan broj uzastopnih gresaka:");
+            int.TryParse((string)Console.ReadLine(), out MaxUzastopnihGresaka);
         }
 
         //TODO potrebna konekacija sa svima preko jednog porta - multipleksiranje uticnice,
@@ -118,7 +132,7 @@ namespace Server
         private static void UspostaviTCPKonekciju()
         {
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 55358);
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 5001);
             serverSocket.Bind(serverEP);
 
             serverSocket.Listen(MaxBrojIgraca);
@@ -137,12 +151,10 @@ namespace Server
                         break;
                     }
                     string poruka = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine(poruka);
-
+                    Console.WriteLine(poruka.TrimEnd());
 
                     if (poruka == "kraj")
                         break;
-
 
                     Console.WriteLine("Unesite poruku");
                     string odgovor = Console.ReadLine();

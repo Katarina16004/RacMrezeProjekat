@@ -5,7 +5,7 @@ namespace Server
     public class Klijent
     {
         public string Ime { get; set; }
-        EndPoint  IPAdresa { get; set; }
+        public  EndPoint  IPAdresa { get; set; }
 
         public Klijent(string ime, EndPoint adresa)
         {

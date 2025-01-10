@@ -8,6 +8,7 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Net.NetworkInformation;
 
 namespace Server
 {
@@ -80,10 +81,16 @@ namespace Server
 
             try
             {
+                string poruka;
                 int brBajta = socket.SendTo(buffer, 0, buffer.Length, SocketFlags.None, destination);
-                int primljena = socket.ReceiveFrom(buffer2, ref posiljaocEP);
-                string poruka = Encoding.UTF8.GetString(buffer2);
-                Console.WriteLine(poruka);
+                do
+                {
+                    int primljena = socket.ReceiveFrom(buffer2, ref posiljaocEP);
+                    poruka = Encoding.UTF8.GetString(buffer2);
+                    Console.WriteLine(poruka.TrimEnd());
+                
+                } while (!poruka.Contains("SPREMAN") && !poruka.Contains("Neuspesno"));
+
 
                 if (poruka.Contains("Neuspesno"))
                 {
@@ -91,6 +98,8 @@ namespace Server
                 }
                 
                 Console.WriteLine("Cekamo na prijavu ostalih igraca!");
+
+
             
             }
             catch (Exception ex)
@@ -109,7 +118,7 @@ namespace Server
         {
             Thread.Sleep(1000);
             Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 55358);
+            IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
             byte[] buffer = new byte[1024];
             clientSocket.Connect(ServerEP);
 
@@ -134,7 +143,7 @@ namespace Server
 
                     string odgovor = Encoding.UTF8.GetString(buffer);
 
-                    Console.WriteLine(odgovor);
+                    Console.WriteLine(odgovor.TrimEnd());
                     if (odgovor == "kraj")
                         break;
 
