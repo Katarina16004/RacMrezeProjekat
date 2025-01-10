@@ -123,31 +123,46 @@ namespace Server
 
             byte[] buffer = new byte[1024];
             Random random = new Random();
-            
-            while (true) 
+
+
+            while (true)
             {
                 try
                 {
                     clientSocket.Connect(ServerEP);
-                    byte[] dataBuffer = new byte[256];
-                    int bytesRead = clientSocket.Receive(dataBuffer);
-                    string message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
-                    Console.WriteLine("Primljena poruka: " + message);
-                    break;
-                    
+                    Console.WriteLine("Connected to server.");
+                    break; 
                 }
                 catch (SocketException e)
                 {
-                    Console.WriteLine("Pokusavam da se povezem na server...");
-                    Thread.Sleep(random.Next(10, 100));
+                    if (e.SocketErrorCode == SocketError.WouldBlock)
+                    {
+                        if (clientSocket.Poll(100000, SelectMode.SelectWrite))
+                        {
+                            Console.WriteLine("Povezan na server.");
+                            break; 
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"SocketException: {e.Message}");
+                        break;
+                    }
                 }
+
+                Console.WriteLine("Pokusavam da se povezem na server...");
+                Thread.Sleep(random.Next(10, 100)); 
             }
-                
-           
+
+
+
             Console.ReadKey();
             Console.WriteLine("Klijent zavrsava sa radom");
             clientSocket.Close();
-
+            //byte[] dataBuffer = new byte[256];
+            //int bytesRead = clientSocket.Receive(dataBuffer);
+            //string message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+            //Console.WriteLine("Primljena poruka: " + message);
         }
 
 

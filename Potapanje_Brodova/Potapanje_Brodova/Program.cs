@@ -149,11 +149,14 @@ namespace Server
                     clientSockets.Add(newClient);
                     Console.WriteLine($"Novi klijent povezan: {newClient.RemoteEndPoint}");
 
-                    string initialMessage = $"Velicina table je {VelicinaTable}, dok je maksimalan broj gresaka {MaxUzastopnihGresaka}";
-                    newClient.Send(Encoding.UTF8.GetBytes(initialMessage));
+                    //string initialMessage = $"Velicina table je {VelicinaTable}, dok je maksimalan broj gresaka {MaxUzastopnihGresaka}";
+                    //newClient.Send(Encoding.UTF8.GetBytes(initialMessage));
                 }
             }
             while (clientSockets.Count()!=MaxBrojIgraca);
+
+            Console.WriteLine("Stigao kod do ovde");
+            Console.ReadKey();
             
             foreach (Socket clientSocket in clientSockets)
             {
