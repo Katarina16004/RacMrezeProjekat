@@ -15,6 +15,7 @@ namespace Server
     internal class Program
     {
         public static string ime = null;
+        public static Socket clientSocket = null;
 
         static void Main(string[] args)
         {
@@ -22,6 +23,8 @@ namespace Server
             PrikaziMeni();
 
             UspostaviTCPKonekciju();
+            PodesiIgru();
+            zatvoriTCPKonenciju();
 
             Console.ReadKey();
         }
@@ -113,7 +116,7 @@ namespace Server
 
         }
 
-        //TODO uspostaviti konekciju sa serverom, nakon toga postaviti brodove na tablu
+      
         private static void UspostaviTCPKonekciju()
         {
             Thread.Sleep(1000);
@@ -121,7 +124,7 @@ namespace Server
             IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
             byte[] buffer = new byte[1024];
             Random random = new Random();
-
+            int brPokusaja = 0;
 
             while (true)
             {
@@ -136,23 +139,41 @@ namespace Server
                     Console.WriteLine($"SocketException: {e.Message}");
                     Console.WriteLine("Pokusavam da se povezem na server...");
                     Thread.Sleep(random.Next(10, 100));
-
+                    if (++brPokusaja == 10) 
+                    {
+                        Console.WriteLine("Neuspeno povezivanje na server");
+                        zatvoriTCPKonenciju();
+                        break;
+                    }
                 }
 
             }
 
+        }
 
+        private static void PodesiIgru()
+        {
+            try
+            {
+                //byte[] dataBuffer = new byte[256];
+                //int bytesRead = clientSocket.Receive(dataBuffer);
+                //string message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                //Console.WriteLine("Primljena poruka: " + message);
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine($"Greska u konekciji! {e}");
+                zatvoriTCPKonenciju();
+            }
 
+        }
+
+        private static void zatvoriTCPKonenciju()
+        {
             Console.ReadKey();
             Console.WriteLine("Klijent zavrsava sa radom");
             clientSocket.Close();
-            //byte[] dataBuffer = new byte[256];
-            //int bytesRead = clientSocket.Receive(dataBuffer);
-            //string message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
-            //Console.WriteLine("Primljena poruka: " + message);
         }
-
-
     }
 }
 
