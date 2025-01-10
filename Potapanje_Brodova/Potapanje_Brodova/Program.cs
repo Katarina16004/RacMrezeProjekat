@@ -134,45 +134,35 @@ namespace Server
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 5001);
             serverSocket.Bind(serverEP);
+            serverSocket.Listen(10); 
+            serverSocket.Blocking = false; 
 
-            serverSocket.Listen(MaxBrojIgraca);
-            Socket acceptedSocket = serverSocket.Accept();
-            IPEndPoint clientEP = acceptedSocket.RemoteEndPoint as IPEndPoint;
-
+            List<Socket> clientSockets = new List<Socket>();
             byte[] buffer = new byte[1024];
-            while (true)
+
+            do
             {
-                try
+                if (serverSocket.Poll(100000, SelectMode.SelectRead)) // 0.1 sekunda timeout
                 {
-                    int brBajta = acceptedSocket.Receive(buffer);
-                    if (brBajta == 0)
-                    {
-                        Console.WriteLine("Klijent je zavrsio sa radom");
-                        break;
-                    }
-                    string poruka = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine(poruka.TrimEnd());
+                    Socket newClient = serverSocket.Accept();
+                    newClient.Blocking = false;
+                    clientSockets.Add(newClient);
+                    Console.WriteLine($"Novi klijent povezan: {newClient.RemoteEndPoint}");
 
-                    if (poruka == "kraj")
-                        break;
-
-                    Console.WriteLine("Unesite poruku");
-                    string odgovor = Console.ReadLine();
-
-                    brBajta = acceptedSocket.Send(Encoding.UTF8.GetBytes(odgovor));
-                    if (odgovor == "kraj")
-                        break;
+                    string initialMessage = $"Velicina table je {VelicinaTable}, dok je maksimalan broj gresaka {MaxUzastopnihGresaka}";
+                    newClient.Send(Encoding.UTF8.GetBytes(initialMessage));
                 }
-                catch (SocketException ex)
-                {
-                    Console.WriteLine($"Doslo je do greske {ex}");
-                    break;
-                }
-
             }
-            acceptedSocket.Close();
+            while (clientSockets.Count()!=MaxBrojIgraca);
+            
+            foreach (Socket clientSocket in clientSockets)
+            {
+                clientSocket.Close();
+            }
             serverSocket.Close();
+           
         }
+
 
     }
 }

@@ -26,6 +26,7 @@ namespace Potapanje_Brodova
         }
         public int AzurirajMatricu(int gadjanaPoz) //salje se pozicija (1-dim) koju protivnik gadja
         {
+
             int i = (gadjanaPoz - 1) / matrica.GetLength(0);
             int j = (gadjanaPoz - 1) % matrica.GetLength(1);
             if (matrica[i, j] == 0)

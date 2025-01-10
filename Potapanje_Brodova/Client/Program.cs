@@ -119,45 +119,35 @@ namespace Server
             Thread.Sleep(1000);
             Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
-            byte[] buffer = new byte[1024];
-            clientSocket.Connect(ServerEP);
+            clientSocket.Blocking = false;
 
-            while (true)
+            byte[] buffer = new byte[1024];
+            Random random = new Random();
+            
+            while (true) 
             {
-                Console.WriteLine("Unesite poruku");
                 try
                 {
-                    string poruka = Console.ReadLine();
-                    int brBajta = clientSocket.Send(Encoding.UTF8.GetBytes(poruka));
-
-                    if (poruka == "kraj")
-                        break;
-
-                    brBajta = clientSocket.Receive(buffer);
-
-                    if (brBajta == 0)
-                    {
-                        Console.WriteLine("Server je zavrsio sa radom");
-                        break;
-                    }
-
-                    string odgovor = Encoding.UTF8.GetString(buffer);
-
-                    Console.WriteLine(odgovor.TrimEnd());
-                    if (odgovor == "kraj")
-                        break;
-
-                }
-                catch (SocketException ex)
-                {
-                    Console.WriteLine($"Doslo je do greske tokom slanja:\n{ex}");
+                    clientSocket.Connect(ServerEP);
+                    byte[] dataBuffer = new byte[256];
+                    int bytesRead = clientSocket.Receive(dataBuffer);
+                    string message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                    Console.WriteLine("Primljena poruka: " + message);
                     break;
+                    
                 }
-
+                catch (SocketException e)
+                {
+                    Console.WriteLine("Pokusavam da se povezem na server...");
+                    Thread.Sleep(random.Next(10, 100));
+                }
             }
-
+                
+           
+            Console.ReadKey();
             Console.WriteLine("Klijent zavrsava sa radom");
             clientSocket.Close();
+
         }
 
 
