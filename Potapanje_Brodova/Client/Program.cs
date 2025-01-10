@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
+using System.Diagnostics;
 
 namespace Server
 {
@@ -173,6 +174,21 @@ namespace Server
             Console.ReadKey();
             Console.WriteLine("Klijent zavrsava sa radom");
             clientSocket.Close();
+        }
+
+        //TODO ubaciti putanju do UDPClienta
+        //NE POKRECI STVARI ENDLESS REKURZIJU
+        private static void UpaliKlijente()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                string clientPath = @"C:\..\UDPClient.exe";
+                Process klijentProces = new Process(); 
+                klijentProces.StartInfo.FileName = clientPath;
+                klijentProces.StartInfo.Arguments = $"{i + 1}";   
+                klijentProces.Start(); 
+                Console.WriteLine($"Pokrenut klijent #{i + 1}");
+            }
         }
     }
 }
