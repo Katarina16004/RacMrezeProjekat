@@ -38,8 +38,8 @@ namespace Server
             bool unos = false;
             do
             {
-               Console.WriteLine("Dobrodosli u potapanje brodova! \n Pritisnite sledece opcije:" +
-                           "\n 1) Nova igra \n 2) Izlaz");
+                Console.WriteLine("Dobrodosli u potapanje brodova! \n Pritisnite sledece opcije:" +
+                           "\n 1) Nova igra \n 2) Izlaz \n 3) Pokreni jos 10 klijenata");
                 int.TryParse(Console.ReadLine(), out x);
                 switch (x)
                 {
@@ -52,6 +52,9 @@ namespace Server
                         Console.WriteLine("Dovidjenja!");
                         Thread.Sleep(1000);
                         Environment.Exit(0);
+                        break;
+                    case 3:
+                        UpaliKlijente();
                         break;
                     default:
                         Console.WriteLine("Greska!");
@@ -222,14 +225,11 @@ namespace Server
             Console.WriteLine("Klijent zavrsava sa radom");
             clientSocket.Close();
         }
-
-        //TODO ubaciti putanju do UDPClienta
-        //NE POKRECI STVARI ENDLESS REKURZIJU
         private static void UpaliKlijente()
         {
             for (int i = 0; i < 10; i++)
             {
-                string clientPath = @"C:\..\UDPClient.exe";
+                string clientPath = "Client.exe";
                 Process klijentProces = new Process(); 
                 klijentProces.StartInfo.FileName = clientPath;
                 klijentProces.StartInfo.Arguments = $"{i + 1}";   
