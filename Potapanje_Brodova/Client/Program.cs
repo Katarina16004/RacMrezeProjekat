@@ -17,6 +17,8 @@ namespace Server
     {
         public static string ime = null;
         public static Socket clientSocket = null;
+        private static int brojPodmornica=0;
+        private static int velTable = 0;
 
         static void Main(string[] args)
         {
@@ -116,7 +118,7 @@ namespace Server
 
         }
 
-      
+        //Uspostavljanje TCP konekcije sa serverom, prijem informacija o igri, slanje pozicija svojih podmornica
         private static void UspostaviTCPKonekciju()
         {
             Thread.Sleep(1000);
@@ -147,6 +149,7 @@ namespace Server
                     }
                 }
             }
+
             //primanje informacija o igri
             try
             {
@@ -154,18 +157,64 @@ namespace Server
                 int bytesRead = clientSocket.Receive(dataBuffer);
                 string message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
                 Console.WriteLine("Primljena poruka: " + message);
+
+                string[] delovi = message.Split(' ');
+                brojPodmornica = int.Parse(delovi[delovi.Length - 1]);
+                string velTableS = delovi[2].Remove(delovi[2].Length - 1);
+                velTable=int.Parse(velTableS);
             }
             catch (SocketException e)
             {
                 Console.WriteLine($"Greska u konekciji! {e}");
                 zatvoriTCPKonenciju();
             }
-            UnosPodmornica();
+
+            //slanje podmornica severu
+            List<int> pozicije=UnosPodmornica();
+
+            byte[] podmornice = Encoding.UTF8.GetBytes(string.Join(",", pozicije));
+            try
+            {
+                clientSocket.Send(podmornice);
+                Console.WriteLine("Podmornice su uspesno poslate serveru.");
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine($"Greška prilikom slanja podmornica: {e.Message}");
+            }
 
         }
-        private static void UnosPodmornica()
+        private static List<int> UnosPodmornica()
         {
-
+            List<int> pozicije=new List<int>();
+            Console.WriteLine($"Unesite pozicije vasih podmornica:");
+            for(int i = 0;i<brojPodmornica;i++)
+            {
+                string unos = Console.ReadLine();
+                if (int.TryParse(unos, out int pozicija))
+                {
+                    if (pozicija >= 1 && pozicija <= velTable * velTable)
+                    {
+                        if (!pozicije.Contains(pozicija))
+                        {
+                            pozicije.Add(pozicija);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Na toj poziciji vec imate podmornicu!");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Pozicija mora biti u opsegu od 1 do {velTable * velTable}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Unesite broj pozicije!");
+                }
+            }
+            return pozicije;
         }
         private static void zatvoriTCPKonenciju()
         {

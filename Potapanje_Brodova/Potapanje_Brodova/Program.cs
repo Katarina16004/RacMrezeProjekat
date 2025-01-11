@@ -5,6 +5,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Potapanje_Brodova;
 
 namespace Server
 {
@@ -127,36 +128,43 @@ namespace Server
             int.TryParse((string)Console.ReadLine(), out MaxUzastopnihGresaka);
         }
 
-        //TODO potrebna konekacija sa svima preko jednog porta - multipleksiranje uticnice,
-        //nakon toga, obavestiti igrace o osnovnim parametrima igre
+        //Uspostavljanje TCP konekcije sa svim igracima, slanje informacija o igri, prijem podmornica svakog klijenta
+        //pocetak igre
         private static void UspostaviTCPKonekciju()
         {
+            // uspostavljanje TCP konekcije
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 5001);
             serverSocket.Bind(serverEP);
-            serverSocket.Listen(10); 
-            serverSocket.Blocking = false; 
+            serverSocket.Listen(10);
+            serverSocket.Blocking = false;
 
             List<Socket> clientSockets = new List<Socket>();
+            List<Socket> readySockets = new List<Socket>();
 
-            do
+            while (clientSockets.Count != MaxBrojIgraca)
             {
-                if (serverSocket.Poll(100000, SelectMode.SelectRead)) // 0.1 sekunda timeout
+                readySockets.Clear();
+                readySockets.Add(serverSocket);
+
+                Socket.Select(readySockets, null, null, 1000);
+
+                foreach (Socket s in readySockets)
                 {
-                    Socket newClient = serverSocket.Accept();
-                    newClient.Blocking = false;
-                    clientSockets.Add(newClient);
-                    Console.WriteLine($"Novi klijent povezan: {newClient.RemoteEndPoint}");
-
-                   
+                    if (s == serverSocket)
+                    {
+                        Socket clientSocket = serverSocket.Accept();
+                        clientSocket.Blocking = false;
+                        clientSockets.Add(clientSocket);
+                        Console.WriteLine($"Novi klijent povezan: {clientSocket.RemoteEndPoint}");
+                    }
                 }
-            }while (clientSockets.Count()!=MaxBrojIgraca);
-            
+            }
 
-            //slanje informacija klijentima o igri
-            int brPodmornica = VelicinaTable*VelicinaTable - MaxUzastopnihGresaka;
+            // slanje informacija o igri klijentima
+            int brPodmornica = VelicinaTable * VelicinaTable - MaxUzastopnihGresaka;
             string info = $"Velicina table: {VelicinaTable}, maksimalan broj gresaka: {MaxUzastopnihGresaka}, broj podmornica: {brPodmornica}";
-            byte[] infoMessage=Encoding.UTF8.GetBytes(info);
+            byte[] infoMessage = Encoding.UTF8.GetBytes(info);
 
             foreach (Socket clientSocket in clientSockets)
             {
@@ -171,12 +179,47 @@ namespace Server
                 }
             }
 
+            // obrada podmornica od klijenata
+            int brojPrimljenihPoruka = 0;
+
+            while (brojPrimljenihPoruka < clientSockets.Count)
+            {
+                readySockets.Clear();
+                foreach (Socket clientSocket in clientSockets)
+                {
+                    readySockets.Add(clientSocket);
+                }
+
+                Socket.Select(readySockets, null, null, 1000);
+
+                foreach (Socket s in readySockets)
+                {
+                    byte[] buffer = new byte[1024];
+                    try
+                    {
+                        int messLength = s.Receive(buffer);
+
+                        if (messLength > 0)
+                        {
+                            string poruka = Encoding.UTF8.GetString(buffer, 0, messLength);
+                            Console.WriteLine($"Podmornice od {s.RemoteEndPoint}: {poruka}");
+
+                            brojPrimljenihPoruka++;
+                        }
+                    }
+                    catch (SocketException ex)
+                    {
+                        Console.WriteLine($"Greska u prijemu podmornica od {s.RemoteEndPoint}: {ex.Message}");
+                    }
+                }
+            }
+
+
             foreach (Socket clientSocket in clientSockets)
             {
                 clientSocket.Close();
             }
             serverSocket.Close();
-           
         }
 
 
