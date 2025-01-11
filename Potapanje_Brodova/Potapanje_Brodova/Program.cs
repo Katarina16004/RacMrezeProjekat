@@ -149,15 +149,12 @@ namespace Server
 
                 Socket.Select(readySockets, null, null, 1000);
 
-                foreach (Socket s in readySockets)
+                if(readySockets.Count>0)
                 {
-                    if (s == serverSocket)
-                    {
-                        Socket clientSocket = serverSocket.Accept();
-                        clientSocket.Blocking = false;
-                        clientSockets.Add(clientSocket);
-                        Console.WriteLine($"Novi klijent povezan: {clientSocket.RemoteEndPoint}");
-                    }
+                    Socket clientSocket = serverSocket.Accept();
+                    clientSocket.Blocking = false;
+                    clientSockets.Add(clientSocket);
+                    Console.WriteLine($"Novi klijent povezan: {clientSocket.RemoteEndPoint}");
                 }
             }
 
