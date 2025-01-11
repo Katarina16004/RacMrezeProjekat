@@ -24,7 +24,6 @@ namespace Server
             PrikaziMeni();
 
             UspostaviTCPKonekciju();
-            PodesiIgru();
             zatvoriTCPKonenciju();
 
             Console.ReadKey();
@@ -61,7 +60,7 @@ namespace Server
 
         static void UnesiIme()
         {
-            Console.WriteLine("Uneiste svoje ime:");
+            Console.WriteLine("Unesite svoje ime:");
             ime = Console.ReadLine(); 
             Console.WriteLine("Ucitavanje...");
             Thread.Sleep(1000);
@@ -147,28 +146,27 @@ namespace Server
                         break;
                     }
                 }
-
             }
-
-        }
-
-        private static void PodesiIgru()
-        {
+            //primanje informacija o igri
             try
             {
-                //byte[] dataBuffer = new byte[256];
-                //int bytesRead = clientSocket.Receive(dataBuffer);
-                //string message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
-                //Console.WriteLine("Primljena poruka: " + message);
+                byte[] dataBuffer = new byte[256];
+                int bytesRead = clientSocket.Receive(dataBuffer);
+                string message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                Console.WriteLine("Primljena poruka: " + message);
             }
             catch (SocketException e)
             {
                 Console.WriteLine($"Greska u konekciji! {e}");
                 zatvoriTCPKonenciju();
             }
+            UnosPodmornica();
 
         }
+        private static void UnosPodmornica()
+        {
 
+        }
         private static void zatvoriTCPKonenciju()
         {
             Console.ReadKey();
