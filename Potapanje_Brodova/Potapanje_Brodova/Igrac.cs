@@ -34,6 +34,7 @@ namespace Potapanje_Brodova
                 if (pozicije.Contains(gadjanaPoz))
                 {
                     matrica[i, j] = 2; // ako se tu nalazila podmornica, znaci da je sada pogodjena
+                    pozicije.Remove(gadjanaPoz);
                     return 2; //pogodjeno
                 }
                 else
