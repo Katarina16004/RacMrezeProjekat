@@ -187,8 +187,9 @@ namespace Server
         private static List<int> UnosPodmornica()
         {
             List<int> pozicije=new List<int>();
+            int brUnetih = 0;
             Console.WriteLine($"Unesite pozicije vasih podmornica:");
-            for(int i = 0;i<brojPodmornica;i++)
+            while(brUnetih<brojPodmornica)
             {
                 string unos = Console.ReadLine();
                 if (int.TryParse(unos, out int pozicija))
@@ -198,6 +199,7 @@ namespace Server
                         if (!pozicije.Contains(pozicija))
                         {
                             pozicije.Add(pozicija);
+                            brUnetih++;
                         }
                         else
                         {
