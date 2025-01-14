@@ -136,7 +136,7 @@ namespace Server
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 5001);
             serverSocket.Bind(serverEP);
-            serverSocket.Listen(10);
+            serverSocket.Listen(MaxBrojIgraca);
             serverSocket.Blocking = false;
 
             List<Socket> clientSockets = new List<Socket>();
