@@ -12,6 +12,7 @@ namespace Server
     internal class Program
     {
         private static List<Klijent> Klijenti = new List<Klijent>();
+        private static List<Igrac> Igraci = new List<Igrac>();
 
         private static int MaxBrojIgraca = 0;
         private static int VelicinaTable = 0;
@@ -155,6 +156,7 @@ namespace Server
                     clientSocket.Blocking = false;
                     clientSockets.Add(clientSocket);
                     Console.WriteLine($"Novi klijent povezan: {clientSocket.RemoteEndPoint}");
+                    Igraci.Add(new Igrac(Igraci.Count, VelicinaTable));
                 }
             }
 
@@ -200,7 +202,12 @@ namespace Server
                         {
                             string poruka = Encoding.UTF8.GetString(buffer, 0, messLength);
                             Console.WriteLine($"Podmornice od {s.RemoteEndPoint}: {poruka}");
-
+                            string[] pozS = poruka.Split(',');
+                            List<int> listaPoz= new List<int>();
+                            for (int i = 0; i < pozS.Length; i++)
+                                listaPoz.Add(int.Parse(pozS[i]));
+                            Igraci.FirstOrDefault(m => m.id == brojPrimljenihPoruka).DodajPodmornice(listaPoz);
+                            Console.WriteLine(Igraci.FirstOrDefault(x => x.id == brojPrimljenihPoruka));
                             brojPrimljenihPoruka++;
                         }
                     }

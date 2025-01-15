@@ -8,10 +8,10 @@ namespace Potapanje_Brodova
 {
     public class Igrac
     {
-        public int id { get; set; }
-        public int brojPromasaja { get; set; }
+        public int id { get;}
+        public int brojPromasaja { get; }
         public List<int> pozicije { get; set; } //korisnik salje pozicije (1-dim)
-        public int[,] matrica { get; set; }
+        public int[,] matrica { get; }
 
         public Igrac(int id, int dimenzija)
         {
@@ -48,6 +48,25 @@ namespace Potapanje_Brodova
                 return 0; //vec gadjano polje
             }
             //server ce na osnovu povratne vrednosti da ispise poruku protivniku
+        }
+        public string PrikaziMatricu()
+        {
+            string s="\t";
+            for (int i = 0; i < matrica.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrica.GetLength(1); j++)
+                {
+                    s=s+matrica[i, j] + " ";
+                }
+                s = s + "\n\t"; // Novi red posle svake vrste
+            }
+            return s;
+        }
+        public override string ToString()
+        {
+            string s = $"----------\nIgrac ID={id}\n----------\nBroj promasaja: {brojPromasaja}";
+            s = s + $"\nTabla:\n{PrikaziMatricu()}\n\n";
+            return s;
         }
     }
 }
