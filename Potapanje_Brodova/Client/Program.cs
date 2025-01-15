@@ -10,6 +10,8 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Server
 {
@@ -125,7 +127,7 @@ namespace Server
         private static void UspostaviTCPKonekciju()
         {
             Thread.Sleep(1000);
-            Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
             byte[] buffer = new byte[1024];
             Random random = new Random();
@@ -175,18 +177,63 @@ namespace Server
             //slanje podmornica severu
             List<int> pozicije=UnosPodmornica();
 
-            byte[] podmornice = Encoding.UTF8.GetBytes(string.Join(",", pozicije));
+            byte[] podmornice = Encoding.UTF8.GetBytes(ime+"|"+string.Join(",", pozicije));
             try
             {
                 clientSocket.Send(podmornice);
-                Console.WriteLine("Podmornice su uspesno poslate serveru.");
+                Console.WriteLine("Podmornice su uspesno poslate serveru.\n Cekamo ostale igrace!");
             }
             catch (SocketException e)
             {
                 Console.WriteLine($"Greška prilikom slanja podmornica: {e.Message}");
             }
 
+            string tabla = PrimiPoruku();
+            PrikaziTablu(Encoding.ASCII.GetBytes(tabla));
+        
         }
+
+        private static string PrimiPoruku()
+        {
+            string message = null;
+            try
+            {
+                byte[] dataBuffer = new byte[256];
+                int bytesRead = clientSocket.Receive(dataBuffer);
+                message= Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                Console.WriteLine("Primljena poruka: " + message);
+
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine($"Greska u konekciji! {e}");
+                zatvoriTCPKonenciju();
+            }
+            return message;
+        }
+
+        private static void PrikaziTablu(byte[] SerijalizovanaMatrica)
+        {
+            int[,] matrica;
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (MemoryStream ms = new MemoryStream(SerijalizovanaMatrica))
+            {
+                matrica = (int[,])formatter.Deserialize(ms);
+            }
+
+            Console.WriteLine("\t");
+            for (int i = 0; i < matrica.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrica.GetLength(1); j++)
+                {
+
+                    Console.WriteLine( matrica[i, j] + " ");
+                }
+               Console.WriteLine("\n\t");
+            }
+
+        }
+
         private static List<int> UnosPodmornica()
         {
             List<int> pozicije=new List<int>();

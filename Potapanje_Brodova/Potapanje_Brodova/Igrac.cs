@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,22 +11,40 @@ namespace Potapanje_Brodova
 {
     public class Igrac
     {
+        public Socket socket {  get; set; }
         public int id { get;}
+        public string ime { get; set; }
         public int brojPromasaja { get; }
         public List<int> pozicije { get; set; } //korisnik salje pozicije (1-dim)
         public int[,] matrica { get; }
 
-        public Igrac(int id, int dimenzija)
+        public Igrac(Socket socket,int id, int dimenzija)
         {
+            this.socket = socket;
             this.id = id;
             brojPromasaja = 0;
             pozicije = new List<int>();
             matrica = new int[dimenzija, dimenzija];
+            this.ime = ime;
         }
-        public void DodajPodmornice(List<int> pozicije)
+        public void DodajPodmornice(List<int> pozicije,string ime)
         {
             this.pozicije = pozicije;
+            this.ime = ime;
+            inicijalizujBrodove();
         }
+
+        private void inicijalizujBrodove()
+        {
+            foreach (var pozicija in pozicije)
+            {
+                int i = (pozicija - 1) / matrica.GetLength(0);
+                int j = (pozicija - 1) % matrica.GetLength(1);
+                matrica[i,j] = 1;
+            }
+           
+        }
+
         public int AzurirajMatricu(int gadjanaPoz) //salje se pozicija (1-dim) koju protivnik gadja
         {
 
@@ -56,7 +77,8 @@ namespace Potapanje_Brodova
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
                 {
-                    s=s+matrica[i, j] + " ";
+
+                    s = s + matrica[i, j] + " ";
                 }
                 s = s + "\n\t"; // Novi red posle svake vrste
             }
@@ -64,9 +86,21 @@ namespace Potapanje_Brodova
         }
         public override string ToString()
         {
-            string s = $"----------\nIgrac ID={id}\n----------\nBroj promasaja: {brojPromasaja}";
+            string s = $"----------\nIgrac ID={id} Ime={ime}\n----------\nBroj promasaja: {brojPromasaja}";
             s = s + $"\nTabla:\n{PrikaziMatricu()}\n\n";
             return s;
+        }
+
+        public  byte[] SerijalizujMatricu()
+        {
+            byte[] serializedMatrix;
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (MemoryStream ms = new MemoryStream())
+            {
+                formatter.Serialize(ms, matrica);
+                serializedMatrix = ms.ToArray(); 
+            }
+            return serializedMatrix;
         }
     }
 }

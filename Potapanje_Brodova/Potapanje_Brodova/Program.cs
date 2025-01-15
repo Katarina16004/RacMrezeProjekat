@@ -14,6 +14,7 @@ namespace Server
         private static List<Klijent> Klijenti = new List<Klijent>();
         private static List<Igrac> Igraci = new List<Igrac>();
 
+        public static Socket serverSocket = null;
         private static int MaxBrojIgraca = 0;
         private static int VelicinaTable = 0;
         private static int MaxUzastopnihGresaka = 0;
@@ -38,7 +39,7 @@ namespace Server
         static void UcitajIgrace()
         {
 
-            Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+             serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 60002);
             serverSocket.Bind(serverEP);
             EndPoint posiljaocEP = new IPEndPoint(IPAddress.Any, 0);
@@ -156,7 +157,7 @@ namespace Server
                     clientSocket.Blocking = false;
                     clientSockets.Add(clientSocket);
                     Console.WriteLine($"Novi klijent povezan: {clientSocket.RemoteEndPoint}");
-                    Igraci.Add(new Igrac(Igraci.Count, VelicinaTable));
+                    Igraci.Add(new Igrac(clientSocket, Igraci.Count, VelicinaTable));
                 }
             }
 
@@ -201,12 +202,15 @@ namespace Server
                         if (messLength > 0)
                         {
                             string poruka = Encoding.UTF8.GetString(buffer, 0, messLength);
-                            Console.WriteLine($"Podmornice od {s.RemoteEndPoint}: {poruka}");
+                            string[] delovi = poruka.Split('|');
+                            string ime = delovi[0];
+                            poruka = delovi[1];
+                            Console.WriteLine($"Podmornice od {ime}: {poruka}");
                             string[] pozS = poruka.Split(',');
                             List<int> listaPoz= new List<int>();
                             for (int i = 0; i < pozS.Length; i++)
                                 listaPoz.Add(int.Parse(pozS[i]));
-                            Igraci.FirstOrDefault(m => m.id == brojPrimljenihPoruka).DodajPodmornice(listaPoz);
+                            Igraci.FirstOrDefault(m => m.id == brojPrimljenihPoruka).DodajPodmornice(listaPoz,ime);
                             Console.WriteLine(Igraci.FirstOrDefault(x => x.id == brojPrimljenihPoruka));
                             brojPrimljenihPoruka++;
                         }
@@ -218,14 +222,37 @@ namespace Server
                 }
             }
 
+            PosaljiKlijentimaTable();
 
-            foreach (Socket clientSocket in clientSockets)
+            ZatvoriUticnice();
+
+           
+        }
+
+        private static void ZatvoriUticnice()
+        {
+            foreach (Igrac i in Igraci)
             {
-                clientSocket.Close();
+                i.socket.Close();
             }
             serverSocket.Close();
         }
 
-
+        private static void PosaljiKlijentimaTable()
+        {
+            foreach (Igrac i in Igraci)
+            {
+                try
+                {
+                    byte[] poruka = i.SerijalizujMatricu();
+                    i.socket.Send(poruka);
+                    Console.WriteLine($"Poruka poslata klijentu: {i.ime}");
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine($"Greska pri slanju poruke klijentu {i.ime}: {ex.Message}");
+                }
+            }
+        }
     }
 }
