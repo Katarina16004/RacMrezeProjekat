@@ -189,7 +189,6 @@ namespace Server
             }
 
             string tabla = PrimiPoruku();
-            PrikaziTablu(Encoding.ASCII.GetBytes(tabla));
         
         }
 
@@ -200,8 +199,8 @@ namespace Server
             {
                 byte[] dataBuffer = new byte[256];
                 int bytesRead = clientSocket.Receive(dataBuffer);
+                PrikaziTablu(dataBuffer, bytesRead);
                 message= Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
-                Console.WriteLine("Primljena poruka: " + message);
 
             }
             catch (SocketException e)
@@ -212,24 +211,24 @@ namespace Server
             return message;
         }
 
-        private static void PrikaziTablu(byte[] SerijalizovanaMatrica)
+        private static void PrikaziTablu(byte[] SerijalizovanaMatrica, int duzina)
         {
             int[,] matrica;
             BinaryFormatter formatter = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream(SerijalizovanaMatrica))
+            using (MemoryStream ms = new MemoryStream(SerijalizovanaMatrica,0,duzina))
             {
                 matrica = (int[,])formatter.Deserialize(ms);
             }
 
-            Console.WriteLine("\t");
+            Console.Write("\t");
             for (int i = 0; i < matrica.GetLength(0); i++)
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
                 {
 
-                    Console.WriteLine( matrica[i, j] + " ");
+                    Console.Write( matrica[i, j] + " ");
                 }
-               Console.WriteLine("\n\t");
+               Console.Write("\n\t");
             }
 
         }

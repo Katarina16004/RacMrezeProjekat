@@ -246,7 +246,7 @@ namespace Server
                 {
                     byte[] poruka = i.SerijalizujMatricu();
                     i.socket.Send(poruka);
-                    Console.WriteLine($"Poruka poslata klijentu: {i.ime}");
+                    Console.WriteLine($"Poruka poslata klijentu: {i.ime} u {i.socket.RemoteEndPoint}");
                 }
                 catch (SocketException ex)
                 {
