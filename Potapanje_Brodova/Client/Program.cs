@@ -225,7 +225,6 @@ namespace Server
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
                 {
-
                     Console.Write( matrica[i, j] + " ");
                 }
                Console.Write("\n\t");

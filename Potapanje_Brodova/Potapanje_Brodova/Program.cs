@@ -210,7 +210,14 @@ namespace Server
                             List<int> listaPoz= new List<int>();
                             for (int i = 0; i < pozS.Length; i++)
                                 listaPoz.Add(int.Parse(pozS[i]));
-                            Igraci.FirstOrDefault(m => m.id == brojPrimljenihPoruka).DodajPodmornice(listaPoz,ime);
+                           foreach(Igrac i in Igraci)
+                           {
+                                if(i.socket == s)
+                                {
+                                    i.DodajPodmornice(listaPoz, ime);
+                                    break;
+                                }
+                           }
                             Console.WriteLine(Igraci.FirstOrDefault(x => x.id == brojPrimljenihPoruka));
                             brojPrimljenihPoruka++;
                         }

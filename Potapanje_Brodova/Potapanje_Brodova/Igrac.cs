@@ -16,7 +16,7 @@ namespace Potapanje_Brodova
         public string ime { get; set; }
         public int brojPromasaja { get; }
         public List<int> pozicije { get; set; } //korisnik salje pozicije (1-dim)
-        public int[,] matrica { get; }
+        public int[,] matrica { get; set; }
 
         public Igrac(Socket socket,int id, int dimenzija)
         {
