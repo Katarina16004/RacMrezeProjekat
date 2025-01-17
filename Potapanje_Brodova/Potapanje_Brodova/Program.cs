@@ -295,11 +295,17 @@ namespace Server
 
         }
 
+        //Salje svima poruku da li zele novu igru, ukoliko zele ide ispocetka, ukoliko ne kraj
         private static void GlasanjeNovaIgra()
         {
             throw new NotImplementedException();
         }
 
+        //Igrac napada dok ne napravi Maksimalan broj uzastopnih gresaka ili dok ne pobedi
+        // 1 Bira koga ce napasti
+        // 2 Napada 
+        // 3 Server obavestava kako je prosao napad
+        // 4 ukoliko ima jos napada ide na korak 2
         private static void NapadniProtivnika()
         {
             throw new NotImplementedException();
