@@ -13,16 +13,20 @@ namespace Server
     {
         private static List<Klijent> Klijenti = new List<Klijent>();
         private static List<Igrac> Igraci = new List<Igrac>();
+        private static List<Socket> readySockets = null;
+
+        private static List<Socket> clientSockets = null;  
 
         public static Socket serverSocket = null;
         private static int MaxBrojIgraca = 0;
         private static int VelicinaTable = 0;
         private static int MaxUzastopnihGresaka = 0;
-
+        private static bool NovaIgra = true;
+        private static bool krajPartije =false;
 
         static void Main(string[] args)
         {
-            
+
             Console.WriteLine("Dobrodosli na server!");
             Console.WriteLine("Unesite broj igraca koji ce da igraju:");
             int.TryParse(Console.ReadLine(), out MaxBrojIgraca);
@@ -30,6 +34,17 @@ namespace Server
 
             UcitajIgrace();
             UspostaviTCPKonekciju();
+
+
+            while (NovaIgra)
+            {
+                IncijalizujTable();
+                PosaljiKlijentimaTable();
+                ZapocniIgru();
+            }
+
+            ZatvoriUticnice();
+
 
             Console.ReadKey();
         }
@@ -130,8 +145,7 @@ namespace Server
             int.TryParse((string)Console.ReadLine(), out MaxUzastopnihGresaka);
         }
 
-        //Uspostavljanje TCP konekcije sa svim igracima, slanje informacija o igri, prijem podmornica svakog klijenta
-        //pocetak igre
+        //Uspostavljanje TCP konekcije sa svim igracima, slanje informacija o igri,
         private static void UspostaviTCPKonekciju()
         {
             // uspostavljanje TCP konekcije
@@ -141,8 +155,8 @@ namespace Server
             serverSocket.Listen(MaxBrojIgraca);
             serverSocket.Blocking = false;
 
-            List<Socket> clientSockets = new List<Socket>();
-            List<Socket> readySockets = new List<Socket>();
+             clientSockets = new List<Socket>();
+             readySockets = new List<Socket>();
 
             while (clientSockets.Count != MaxBrojIgraca)
             {
@@ -178,7 +192,11 @@ namespace Server
                     Console.WriteLine($"Greska pri slanju poruke klijentu {clientSocket.RemoteEndPoint}: {ex.Message}");
                 }
             }
+           
+        }
 
+        private static void IncijalizujTable()
+        {
             // obrada podmornica od klijenata
             int brojPrimljenihPoruka = 0;
 
@@ -207,18 +225,20 @@ namespace Server
                             poruka = delovi[1];
                             Console.WriteLine($"Podmornice od {ime}: {poruka}");
                             string[] pozS = poruka.Split(',');
-                            List<int> listaPoz= new List<int>();
+                            List<int> listaPoz = new List<int>();
                             for (int i = 0; i < pozS.Length; i++)
                                 listaPoz.Add(int.Parse(pozS[i]));
-                           foreach(Igrac i in Igraci)
-                           {
-                                if(i.socket == s)
+
+                            //Svaki socket je vezan za specificnog igraca i moramo potraziti koji je igrac u pitanju
+                            foreach (Igrac i in Igraci)
+                            {
+                                if (i.socket == s)
                                 {
                                     i.DodajPodmornice(listaPoz, ime);
                                     break;
                                 }
-                           }
-                            Console.WriteLine(Igraci.FirstOrDefault(x => x.id == brojPrimljenihPoruka));
+                            }
+                            Console.WriteLine("Primljena poruka od:" + ime);
                             brojPrimljenihPoruka++;
                         }
                     }
@@ -228,12 +248,6 @@ namespace Server
                     }
                 }
             }
-
-            PosaljiKlijentimaTable();
-
-            ZatvoriUticnice();
-
-           
         }
 
         private static void ZatvoriUticnice()
@@ -260,6 +274,35 @@ namespace Server
                     Console.WriteLine($"Greska pri slanju poruke klijentu {i.ime}: {ex.Message}");
                 }
             }
+        }
+
+        private static void ZapocniIgru()
+        {
+            do
+            {
+                foreach(Igrac i in Igraci)
+                {
+                    NapadniProtivnika();
+                    if (krajPartije)
+                    {
+                        GlasanjeNovaIgra();
+                        return;
+                    }
+                        
+                }
+
+            } while (!krajPartije);
+
+        }
+
+        private static void GlasanjeNovaIgra()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void NapadniProtivnika()
+        {
+            throw new NotImplementedException();
         }
     }
 }
