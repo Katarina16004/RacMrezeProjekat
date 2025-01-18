@@ -310,6 +310,8 @@ namespace Server
         {
            foreach(Igrac i in Igraci)
            {
+                if (krajPartije)
+                    GlasanjeNovaIgra();
                 string s = "Uneiste redni broj protivnika kog zelite da napadnete:\n";
                 int j = 1;
                 foreach(Igrac protivnici in Igraci)
@@ -319,6 +321,7 @@ namespace Server
                         continue;
                     }
                     s = s + j++ + ". " + protivnici.ime + "\n"; 
+                    protivnici.socket.Send(Encoding.UTF8.GetBytes($"Igrac {i.ime} je na potezu!\n"));
                 }
                 
                 try
