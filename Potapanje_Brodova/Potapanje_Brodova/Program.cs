@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Potapanje_Brodova;
+using System.CodeDom;
 
 namespace Server
 {
@@ -333,9 +334,29 @@ namespace Server
                 {
                     Console.WriteLine($"Greska pri slanju poruke klijentu {i.ime}: {ex.Message}");
                 }
-             
+
+                Igrac protivnik = PrimiPorukuOProtivniku(i);
+
+                while (i.brojPromasaja != 0)
+                {
+                    Potez(i);
+                }
             }
 
+        }
+
+        //Korisnik salje poruku o tome koje polje gadja, i server salje infor ostalima 
+        //Povecava se ili smanjuje broj promasaja na tom igracu
+        private static void Potez(Igrac i)
+        {
+            throw new NotImplementedException();
+        }
+
+        //Korisnik salje redni broj protivnika koga ce kosnik da gadja,
+        //TODO osmisliti logiku kako od rednog broja da dobijemo odredjenog protivnika
+        private static Igrac PrimiPorukuOProtivniku(Igrac i)
+        {
+            throw new NotImplementedException();
         }
     }
 }
