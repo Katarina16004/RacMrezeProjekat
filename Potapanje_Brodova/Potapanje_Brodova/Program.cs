@@ -308,7 +308,31 @@ namespace Server
         // 4 ukoliko ima jos napada ide na korak 2
         private static void NapadniProtivnika()
         {
-            throw new NotImplementedException();
+           foreach(Igrac i in Igraci)
+           {
+                string s = "Uneiste redni broj protivnika kog zelite da napadnete:\n";
+                int j = 1;
+                foreach(Igrac protivnici in Igraci)
+                {
+                    if(protivnici == i)
+                    {
+                        continue;
+                    }
+                    s = s + j++ + ". " + protivnici.ime + "\n"; 
+                }
+                
+                try
+                {
+                    i.socket.Send(Encoding.UTF8.GetBytes(s));
+                    Console.WriteLine($"Poruka poslata klijentu: {i.ime}");
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine($"Greska pri slanju poruke klijentu {i.ime}: {ex.Message}");
+                }
+             
+            }
+
         }
     }
 }
