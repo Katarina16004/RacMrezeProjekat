@@ -14,9 +14,11 @@ namespace Potapanje_Brodova
         public Socket socket {  get; set; }
         public int id { get;}
         public string ime { get; set; }
-        public int brojPromasaja { get; }
+        public int brojPromasaja { get; set; }
         public List<int> pozicije { get; set; } //korisnik salje pozicije (1-dim)
         public int[,] matrica { get; set; }
+
+        public bool PrethodniPogodak {  get; set; }
 
         public Igrac(Socket socket,int id, int dimenzija)
         {
@@ -26,6 +28,7 @@ namespace Potapanje_Brodova
             pozicije = new List<int>();
             matrica = new int[dimenzija, dimenzija];
             this.ime = ime;
+            this.PrethodniPogodak = true;
         }
         public void DodajPodmornice(List<int> pozicije,string ime)
         {

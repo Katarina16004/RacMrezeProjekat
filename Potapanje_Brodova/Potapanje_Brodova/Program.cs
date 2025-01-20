@@ -294,7 +294,7 @@ namespace Server
                     string imeProtivnika = delovi[0];
                     int polje = int.Parse(delovi[1]);
 
-                    //NapadniProtivnika();
+                    NapadniProtivnika(igracNaPotezu,imeProtivnika,polje);
 
                     if (krajPartije)
                     {
@@ -408,9 +408,131 @@ namespace Server
         // 2 Napada 
         // 3 Server obavestava kako je prosao napad
         // 4 ukoliko ima jos napada ide na korak 2
-        private static void NapadniProtivnika(Igrac trenutniIgrac)
+        private static void NapadniProtivnika(Igrac trenutniIgrac,string imeProtivnika,int polje)
         {
-            throw new NotImplementedException();
+            bool krajPoteza = false;
+            Igrac Protivnik = null;
+            string poruka;
+            foreach(Igrac i in Igraci)
+            {
+                if(i.ime == imeProtivnika)
+                {
+                    Protivnik = i;
+                    break;
+                }
+            }
+
+            int ishod = Protivnik.AzurirajMatricu(polje);
+     
+            switch (ishod)
+            {
+                case 0:
+                    poruka = "Vec napadnuto polje!";
+                    break;
+                case 1:
+                    poruka = "Promasaj!";
+                    break;
+                case 2:
+                    poruka = "Pogodak!";
+                    break;
+                default:
+                    poruka = "Greska!";
+                    break;
+            }
+
+            //Ako nije pogodak
+            if (ishod != 2)
+            {
+                trenutniIgrac.brojPromasaja++;
+                trenutniIgrac.PrethodniPogodak = false;
+                if (trenutniIgrac.brojPromasaja == MaxUzastopnihGresaka)
+                {
+                    trenutniIgrac.brojPromasaja = 0;
+                    trenutniIgrac.PrethodniPogodak = true;
+                    krajPoteza=true;
+                    return;
+                }
+            }
+            //Ako je pogodak
+            else
+            {
+                trenutniIgrac.PrethodniPogodak = true;
+                if(Protivnik.pozicije.Count == 0)
+                {
+                    krajPoteza = true;
+                    krajPartije = true;
+                    GlasanjeNovaIgra();
+                }
+            }
+            while (krajPoteza)
+            {
+                krajPoteza = NastaviNapad(trenutniIgrac, Protivnik);
+            }
+
+        }
+
+        private static bool NastaviNapad(Igrac trenutniIgrac, Igrac protivnik)
+        {
+            string poruka = $"Broj uzastopnih gresaka do sad je " +
+            $"{trenutniIgrac.brojPromasaja}, maksimalan broj je: {MaxUzastopnihGresaka}\n"
+            + "Odaberite polje koje napadate:";
+
+            byte[] message = Encoding.UTF8.GetBytes(poruka);
+
+            try
+            {
+                trenutniIgrac.socket.Send(message);
+                Console.WriteLine($"Poruka poslata igracu {trenutniIgrac.ime}: {poruka}");
+            }
+            catch (SocketException ex)
+            {
+                Console.WriteLine($"Greska pri slanju poruke igracu {trenutniIgrac.ime}: {ex.Message}");
+            }
+
+            string odgovor=CekajNaPotez(trenutniIgrac);
+            int poljeZaNapad;
+            int.TryParse(odgovor, out poljeZaNapad);
+           int ishod = protivnik.AzurirajMatricu(poljeZaNapad);
+
+            switch (ishod)
+            {
+                case 0:
+                    poruka = "Vec napadnuto polje!";
+                    break;
+                case 1:
+                    poruka = "Promasaj!";
+                    break;
+                case 2:
+                    poruka = "Pogodak!";
+                    break;
+                default:
+                    poruka = "Greska!";
+                    break;
+            }
+
+            //Ako nije pogodak
+            if (ishod != 2)
+            {
+                trenutniIgrac.brojPromasaja++;
+                trenutniIgrac.PrethodniPogodak = false;
+                if (trenutniIgrac.brojPromasaja == MaxUzastopnihGresaka)
+                {
+                    trenutniIgrac.brojPromasaja = 0;
+                    trenutniIgrac.PrethodniPogodak = true;
+                    return false;
+                }
+            }
+            //Ako je pogodak
+            else
+            {
+                trenutniIgrac.PrethodniPogodak = true;
+                if (protivnik.pozicije.Count == 0)
+                {
+                    krajPartije = true;
+                    GlasanjeNovaIgra();
+                }
+            }
+            return true;
         }
     }
 }
