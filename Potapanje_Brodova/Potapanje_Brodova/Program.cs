@@ -392,16 +392,62 @@ namespace Server
             }
         }
 
-        private static void OdaberiProtivnika()
-        {
-            throw new NotImplementedException();
-        }
-
-
         //Salje svima poruku da li zele novu igru, ukoliko zele ide ispocetka, ukoliko ne kraj
         private static void GlasanjeNovaIgra()
         {
-            throw new NotImplementedException();
+            string poruka = "Unesite 1 ukoliko zelite novu partiju, 2 ukoliko ne zelite:";
+            byte [] message = Encoding.UTF8.GetBytes (poruka);
+            foreach(Igrac i in Igraci)
+            {
+                try
+                {
+                    i.socket.Send(message);
+                    Console.WriteLine($"Poruka poslata igracu {i.ime}: {poruka}");
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine($"Greska pri slanju poruke igracu {i.ime}: {ex.Message}");
+                }
+            }
+
+            int brojPrimljenihPoruka = 0;
+            bool nova = true;
+            while (brojPrimljenihPoruka < clientSockets.Count)
+            {
+                readySockets.Clear();
+                foreach (Socket clientSocket in clientSockets)
+                {
+                    readySockets.Add(clientSocket);
+                }
+
+                Socket.Select(readySockets, null, null, 1000);
+
+                foreach (Socket s in readySockets)
+                {
+                    byte[] buffer = new byte[1024];
+                    try
+                    {
+                        int messLength = s.Receive(buffer);
+
+                        if (messLength > 0)
+                        {
+                            string primljena = Encoding.UTF8.GetString(buffer);
+                            if (primljena.Contains("2"))
+                            {
+                                nova = false;   
+                            }
+                            Console.WriteLine("Primljena poruka od:" + s.RemoteEndPoint);
+                            brojPrimljenihPoruka++;
+                        }
+                    }
+                    catch (SocketException ex)
+                    {
+                        Console.WriteLine($"Greska u prijemu podmornica od {s.RemoteEndPoint}: {ex.Message}");
+                    }
+                }
+            }
+
+            krajPartije = nova;
         }
 
         //Igrac napada dok ne napravi Maksimalan broj uzastopnih gresaka ili dok ne pobedi
@@ -517,11 +563,11 @@ namespace Server
                     try
                     {
                         i.socket.Send(message);
-                        Console.WriteLine($"Poruka poslata igracu {trenutniIgrac.ime}: {poruka}");
+                        Console.WriteLine($"Poruka poslata igracu {i.ime}: {poruka}");
                     }
                     catch (SocketException ex)
                     {
-                        Console.WriteLine($"Greska pri slanju poruke igracu {trenutniIgrac.ime}: {ex.Message}");
+                        Console.WriteLine($"Greska pri slanju poruke igracu {i.ime}: {ex.Message}");
                     }
                 }
             }
