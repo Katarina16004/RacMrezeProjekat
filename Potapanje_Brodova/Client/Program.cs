@@ -230,7 +230,10 @@ namespace Server
                         Console.WriteLine("Unesite ime protivnika kog zelite da napadnete:");
                         napadnuti = Console.ReadLine();
                         if (dostupniIgraci.Contains(napadnuti))
+                        {
+                            byte[] imeData = Encoding.UTF8.GetBytes(ime);
                             break;
+                        }
                         else
                             Console.WriteLine("Nepostojece ime. Pokusajte ponovo.");
                     }
@@ -239,6 +242,7 @@ namespace Server
                     int polje = 0;
                     while (true)
                     {
+                        
                         Console.WriteLine($"Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
                         if (int.TryParse(Console.ReadLine(), out polje) && polje >= 1 && polje <= velTable * velTable)
                         {

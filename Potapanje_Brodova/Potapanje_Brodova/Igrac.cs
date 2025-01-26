@@ -18,6 +18,8 @@ namespace Potapanje_Brodova
         public List<int> pozicije { get; set; } //korisnik salje pozicije (1-dim)
         public int[,] matrica { get; set; }
 
+        public int[,] matricaGadjana { get; set; } //matrica koja pamti poteze gadjanja
+
         public bool PrethodniPogodak {  get; set; }
 
         public Igrac(Socket socket,int id, int dimenzija)
@@ -27,6 +29,7 @@ namespace Potapanje_Brodova
             brojPromasaja = 0;
             pozicije = new List<int>();
             matrica = new int[dimenzija, dimenzija];
+            matricaGadjana = new int[dimenzija, dimenzija];
             this.ime = ime;
             this.PrethodniPogodak = true;
         }
@@ -51,19 +54,20 @@ namespace Potapanje_Brodova
         public int AzurirajMatricu(int gadjanaPoz) //salje se pozicija (1-dim) koju protivnik gadja
         {
 
-            int i = (gadjanaPoz - 1) / matrica.GetLength(0);
-            int j = (gadjanaPoz - 1) % matrica.GetLength(1);
-            if (matrica[i, j] == 0)
+            int i = (gadjanaPoz - 1) / matricaGadjana.GetLength(0);
+            int j = (gadjanaPoz - 1) % matricaGadjana.GetLength(1);
+            if (matricaGadjana[i, j] == 0)
             {
                 if (pozicije.Contains(gadjanaPoz))
                 {
-                    matrica[i, j] = 2; // ako se tu nalazila podmornica, znaci da je sada pogodjena
+                    matricaGadjana[i, j] = 2; // ako se tu nalazila podmornica, znaci da je sada pogodjena
                     pozicije.Remove(gadjanaPoz);
+                    matrica[i, j] = 0; //brisemo brod sa prave matrice
                     return 2; //pogodjeno
                 }
                 else
                 {
-                    matrica[i, j] = 1; // ako se tu ne nalazi podmornica, znaci da je promasena
+                    matricaGadjana[i, j] = 1; // ako se tu ne nalazi podmornica, znaci da je promasena
                     return 1; //promaseno
                 }
             }
@@ -72,6 +76,24 @@ namespace Potapanje_Brodova
                 return 0; //vec gadjano polje
             }
             //server ce na osnovu povratne vrednosti da ispise poruku protivniku
+        }
+        public string PrikaziMatricuGadjana()
+        {
+            string s = "\t";
+            for (int i = 0; i < matrica.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrica.GetLength(1); j++)
+                {
+                    if (matricaGadjana[i,j] == 0)
+                        s = s + "- ";
+                    else if (matricaGadjana[i, j] == 1)
+                        s = s + "+ ";
+                    else
+                        s = s + "x ";
+                }
+                s = s + "\n\t"; // Novi red posle svake vrste
+            }
+            return s;
         }
         public string PrikaziMatricu()
         {
