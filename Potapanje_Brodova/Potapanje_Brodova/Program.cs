@@ -312,7 +312,6 @@ namespace Server
                 {
                     polje = int.Parse(poljeProtivnika);
                 }
-
                 NapadniProtivnika(igracNaPotezu, imeProtivnika, polje);
 
                 if (krajPartije)
@@ -542,7 +541,6 @@ namespace Server
                     }
                 }
                 byte[] message = Encoding.UTF8.GetBytes(poruka + info);
-
                 //Posalji poruku Igracu kako je prosao potez
                 try
                 {
@@ -568,23 +566,36 @@ namespace Server
         {
 
             string poruka = $"Igrac {trenutniIgrac.ime} -> {protivnik.ime}: {ishod}";
+            Console.WriteLine(poruka);//ispis i na serveru
             byte [] message = Encoding.UTF8.GetBytes(poruka);
             foreach (Igrac i in Igraci)
             {
-                if(i == trenutniIgrac)
+                if(i != trenutniIgrac)
                 {
-                    continue;
-                }
-                else
-                {
-                    try
+                    if(i==protivnik)
                     {
-                        i.socket.Send(message);
-                        Console.WriteLine($"Poruka poslata igracu {i.ime}: {poruka}");
+                        try
+                        {
+                            byte[] porukaZaProtivnika = Encoding.UTF8.GetBytes(trenutniIgrac.ime + " je gadjao vas i odigrao: " + ishod);
+                            i.socket.Send(porukaZaProtivnika);
+                            //Console.WriteLine($"Poruka poslata igracu {i.ime}: {porukaZaProtivnika}");
+                        }
+                        catch
+                        {
+                            Console.WriteLine($"Greska pri slanju poruke igracu {i.ime}");
+                        }
                     }
-                    catch (SocketException ex)
+                    else
                     {
-                        Console.WriteLine($"Greska pri slanju poruke igracu {i.ime}: {ex.Message}");
+                        try
+                        {
+                            i.socket.Send(message);
+                            Console.WriteLine($"Poruka poslata igracu {i.ime}: {poruka}");
+                        }
+                        catch (SocketException ex)
+                        {
+                            Console.WriteLine($"Greska pri slanju poruke igracu {i.ime}: {ex.Message}");
+                        }
                     }
                 }
             }

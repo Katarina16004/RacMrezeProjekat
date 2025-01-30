@@ -236,7 +236,7 @@ namespace Server
                             Console.WriteLine("Nepostojece ime. Pokusajte ponovo.");
                     }
                     //saljemo prvo ime protivnika
-                    byte[] imeData = Encoding.UTF8.GetBytes(ime);
+                    byte[] imeData = Encoding.UTF8.GetBytes(napadnuti);
                     try
                     {
                         clientSocket.Send(imeData);
@@ -279,11 +279,21 @@ namespace Server
                     {
                         Console.WriteLine($"Greska prilikom slanja polja koje zelite da napadnete: {e.Message}");
                     }
+                    //ishod
+                    dataBuffer = new byte[256];
+                    bytesRead = clientSocket.Receive(dataBuffer);
+                    string ishod = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                    Console.WriteLine(ishod);
 
                 }
                 else
                 {
                     Console.WriteLine("Cekaj na svoj red...");
+                    dataBuffer = new byte[256];
+                    bytesRead = clientSocket.Receive(dataBuffer);
+                    string ishod = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                    Console.WriteLine(ishod);
+
                 }
             }
             catch (SocketException e)
