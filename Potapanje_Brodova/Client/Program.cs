@@ -189,6 +189,7 @@ namespace Server
             }
 
             //ispis table
+            Console.WriteLine("Stanje vase table: ");
             string tabla = PrimiPoruku();
 
             //pocetak igre
@@ -230,13 +231,27 @@ namespace Server
                         Console.WriteLine("Unesite ime protivnika kog zelite da napadnete:");
                         napadnuti = Console.ReadLine();
                         if (dostupniIgraci.Contains(napadnuti))
-                        {
-                            byte[] imeData = Encoding.UTF8.GetBytes(ime);
                             break;
-                        }
                         else
                             Console.WriteLine("Nepostojece ime. Pokusajte ponovo.");
                     }
+                    //saljemo prvo ime protivnika
+                    byte[] imeData = Encoding.UTF8.GetBytes(ime);
+                    try
+                    {
+                        clientSocket.Send(imeData);
+                        Console.WriteLine("Ime protivnika je uspesno poslato serveru");
+                    }
+                    catch (SocketException e)
+                    {
+                        Console.WriteLine($"Greska prilikom slanja imena protivnika: {e.Message}");
+                    }
+
+                    //primamo od servera stanje table gadjanja
+                    dataBuffer = new byte[256];
+                    bytesRead = clientSocket.Receive(dataBuffer);
+                    string tablaGadjanja = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                    Console.WriteLine("Dosadasnja gadjanja protivnicke table: \n" + tablaGadjanja);
 
                     //odabir polja
                     int polje = 0;
@@ -253,20 +268,18 @@ namespace Server
                             Console.WriteLine($"Unesite broj izmedju 1 i {velTable * velTable}");
                         }
                     }
-
-                    string poruka = $"{napadnuti}|{polje}";
-                    byte[] podaci = Encoding.UTF8.GetBytes(poruka);
-
-                    //slanje poteza serveru
+                    //saljemo polje za napad
+                    byte[] poljeData = Encoding.UTF8.GetBytes(polje.ToString());
                     try
                     {
-                        clientSocket.Send(podaci);
-                        Console.WriteLine("Vas potez je uspesno poslat serveru");
+                        clientSocket.Send(poljeData);
+                        Console.WriteLine("Polje koje zelite da napadnete je uspesno poslato serveru");
                     }
                     catch (SocketException e)
                     {
-                        Console.WriteLine($"Greska prilikom slanja poteza: {e.Message}");
+                        Console.WriteLine($"Greska prilikom slanja polja koje zelite da napadnete: {e.Message}");
                     }
+
                 }
                 else
                 {
@@ -313,7 +326,10 @@ namespace Server
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
                 {
-                    Console.Write(matrica[i, j] + " ");
+                    if (matrica[i, j] == 1)
+                        Console.Write("O ");
+                    else
+                        Console.Write("- ");//Console.Write(matrica[i, j] + " ");
                 }
                 Console.Write("\n\t");
             }

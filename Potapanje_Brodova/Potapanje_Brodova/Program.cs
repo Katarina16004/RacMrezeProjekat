@@ -284,25 +284,42 @@ namespace Server
             do
             {
                 Igrac igracNaPotezu = Igraci[trenutniIgrac];
+                Igrac protivnik = null;
                 ObavestiIgrace(igracNaPotezu);
 
                 //potez trenutnog igraca
-                string odgovor = CekajNaPotez(igracNaPotezu);
+                string imeProtivnika = CekajNaPotez(igracNaPotezu);
 
-                if (!string.IsNullOrEmpty(odgovor))
+                if (!string.IsNullOrEmpty(imeProtivnika))
                 {
-                    string[] delovi = odgovor.Split('|');
-                    string imeProtivnika = delovi[0];
-                    int polje = int.Parse(delovi[1]);
-
-                    NapadniProtivnika(igracNaPotezu,imeProtivnika,polje);
-
-                    if (krajPartije)
+                    protivnik = Igraci.FirstOrDefault(i => i.ime == imeProtivnika);
+                    string tablaGadjanja = protivnik.PrikaziMatricuGadjana();
+                    byte[] tablaData = Encoding.UTF8.GetBytes(tablaGadjanja);
+                    try
                     {
-                        //ObjaviKrajPartije();
-                        //GlasanjeNovaIgra();
-                        return;
+                        igracNaPotezu.socket.Send(tablaData);
+                        Console.WriteLine("Uspesno poslata tabla gadjanja protivnika");
                     }
+                    catch
+                    {
+                        Console.WriteLine("Greska pri slanju table gadjanja protivnika");
+                    }
+                       
+                }
+                int polje=-1;
+                string poljeProtivnika = CekajNaPotez(igracNaPotezu);
+                if (!string.IsNullOrEmpty(poljeProtivnika))
+                {
+                    polje = int.Parse(poljeProtivnika);
+                }
+
+                NapadniProtivnika(igracNaPotezu, imeProtivnika, polje);
+
+                if (krajPartije)
+                {
+                    //ObjaviKrajPartije();
+                    //GlasanjeNovaIgra();
+                    return;
                 }
 
                 trenutniIgrac = (trenutniIgrac + 1) % Igraci.Count;
