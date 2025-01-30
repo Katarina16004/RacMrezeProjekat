@@ -189,7 +189,6 @@ namespace Server
             }
 
             //ispis table
-            Console.WriteLine("Stanje vase table: ");
             string tabla = PrimiPoruku();
 
             //pocetak igre
@@ -330,16 +329,17 @@ namespace Server
             {
                 matrica = (int[,])formatter.Deserialize(ms);
             }
-
+            Console.WriteLine("Stanje vase table: ");
             Console.Write("\t");
             for (int i = 0; i < matrica.GetLength(0); i++)
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
                 {
-                    if (matrica[i, j] == 1)
+                    Console.Write(matrica[i, j] + " ");
+                    /*if (matrica[i, j] == 1)
                         Console.Write("O ");
                     else
-                        Console.Write("- ");//Console.Write(matrica[i, j] + " ");
+                        Console.Write("- ");*/
                 }
                 Console.Write("\n\t");
             }
