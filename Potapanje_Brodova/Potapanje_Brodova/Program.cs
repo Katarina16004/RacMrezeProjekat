@@ -284,15 +284,25 @@ namespace Server
             do
             {
                 Igrac igracNaPotezu = Igraci[trenutniIgrac];
-                Igrac protivnik = null;
-                ObavestiIgrace(igracNaPotezu);
-
-                //potez trenutnog igraca
-                string imeProtivnika = CekajNaPotez(igracNaPotezu);
-
-                if (!string.IsNullOrEmpty(imeProtivnika))
+                if(!igracNaPotezu.izgubio)
                 {
-                    protivnik = Igraci.FirstOrDefault(i => i.ime == imeProtivnika);
+                    Igrac protivnik = null;
+                    ObavestiIgrace(igracNaPotezu);
+
+                    //potez trenutnog igraca
+                    string imeProtivnika;
+                    do
+                    {
+                        imeProtivnika = CekajNaPotez(igracNaPotezu);
+                        protivnik = Igraci.FirstOrDefault(i => i.ime == imeProtivnika);
+
+                        if (protivnik == null || protivnik.izgubio)
+                        {
+                            Console.WriteLine("Igrac ne postoji ili je vec eliminisan. Pokusaj ponovo");
+                            imeProtivnika = null;
+                        }
+                    } while (imeProtivnika == null);
+
                     string tablaGadjanja = protivnik.PrikaziMatricuGadjana();
                     byte[] tablaData = Encoding.UTF8.GetBytes(tablaGadjanja);
                     try
@@ -304,23 +314,22 @@ namespace Server
                     {
                         Console.WriteLine("Greska pri slanju table gadjanja protivnika");
                     }
-                       
-                }
-                int polje=-1;
-                string poljeProtivnika = CekajNaPotez(igracNaPotezu);
-                if (!string.IsNullOrEmpty(poljeProtivnika))
-                {
-                    polje = int.Parse(poljeProtivnika);
-                }
-                NapadniProtivnika(igracNaPotezu, imeProtivnika, polje);
 
-                if (krajPartije)
-                {
-                    //ObjaviKrajPartije();
-                    //GlasanjeNovaIgra();
-                    return;
-                }
+                    int polje = -1;
+                    string poljeProtivnika = CekajNaPotez(igracNaPotezu);
+                    if (!string.IsNullOrEmpty(poljeProtivnika))
+                    {
+                        polje = int.Parse(poljeProtivnika);
+                    }
+                    NapadniProtivnika(igracNaPotezu, imeProtivnika, polje);
 
+                    if (krajPartije)
+                    {
+                        //ObjaviKrajPartije();
+                        //GlasanjeNovaIgra();
+                        return;
+                    }
+                }
                 trenutniIgrac = (trenutniIgrac + 1) % Igraci.Count;
             } while (!krajPartije);
         }
@@ -385,7 +394,7 @@ namespace Server
                     poruka = $"Izaberi koga zelis da napadnes";
                     foreach (Igrac ig in Igraci)
                     {
-                        if (ig.ime != i.ime)
+                        if (ig.ime != i.ime && ig.izgubio==false)
                             poruka = poruka + "\n\t->" + ig.ime;
                     }
                 }
@@ -478,7 +487,6 @@ namespace Server
             int GadjajPolje = polje;
             string poruka;
             
-
             foreach (Igrac i in Igraci)
             {
                 if(i.ime == imeProtivnika)
@@ -511,33 +519,46 @@ namespace Server
                 //Ako nije pogodak
                 if (ishod != 2)
                 {
+                    //kada napadac promasi, sledeci igrac dobija potez. Ukoliko je napadac stigao do max broja gresaka, za njega je partija
+                    //zavrsena i ceka rezultat. On do kraja partije ne moze da gadja nikoga, niti iko njega (zadatak 8)
+
                     trenutniIgrac.brojPromasaja++;
                     trenutniIgrac.PrethodniPogodak = false;
                     info = $"\nBroj uzastopnih gresaka do sad je " +
-                    $"{trenutniIgrac.brojPromasaja}, maksimalan broj je: {MaxUzastopnihGresaka}\n"
-                    + "Odaberite polje koje napadate:";
+                    $"{trenutniIgrac.brojPromasaja}, maksimalan broj je: {MaxUzastopnihGresaka}\n";
+                    //+ "Odaberite polje koje napadate:";
+                    krajPoteza = true;
                     
                     if (trenutniIgrac.brojPromasaja == MaxUzastopnihGresaka)
                     {
                         trenutniIgrac.brojPromasaja = 0;
                         trenutniIgrac.PrethodniPogodak = true;
-                        krajPoteza = true;
+                        trenutniIgrac.izgubio = true;
                         return;
                     }
                 }
                 //Ako je pogodak
                 else
                 {
-                    info = $"\nPreostalo brodova protivniku je: {Protivnik.pozicije.Count}\n "+
-                    "Odaberite polje koje gadjate:";
+                    //kada napadac potopi podmornicu protivniku, dobija sansu da gadja opet. Ukoliko je potopio sve podmornice, dobija sledeci potez
+                    //da gadja nekog preostalog. (ili tu moze da se zavrsi njegov potez zbog jednostavnosti)
+
+                    info = $"\nPreostalo brodova protivniku je: {Protivnik.pozicije.Count}\n ";
 
                     trenutniIgrac.PrethodniPogodak = true;
                     if (Protivnik.pozicije.Count == 0)
                     {
-                        krajPoteza = true;
+                        //napada nekog od preostalih, ako ih ima
+
+                        /*krajPoteza = true;
                         krajPartije = true;
                         ObjaviKrajPartije();
-                        GlasanjeNovaIgra();
+                        GlasanjeNovaIgra();*/ //kraj partije je kada ostane samo jedan igrac s podmornicama
+                    }
+                    else
+                    {
+                        //info += "Odaberite polje koje gadjate:";
+                        //napadniProtivnika
                     }
                 }
                 byte[] message = Encoding.UTF8.GetBytes(poruka + info);
@@ -576,7 +597,7 @@ namespace Server
                     {
                         try
                         {
-                            byte[] porukaZaProtivnika = Encoding.UTF8.GetBytes(trenutniIgrac.ime + " je gadjao vas i odigrao: " + ishod);
+                            byte[] porukaZaProtivnika = Encoding.UTF8.GetBytes(trenutniIgrac.ime + " je gadjao vas i odigrao: " + ishod+"\nVasa tabla sada izgleda ovako:\n"+protivnik.PrikaziMatricu());
                             i.socket.Send(porukaZaProtivnika);
                             //Console.WriteLine($"Poruka poslata igracu {i.ime}: {porukaZaProtivnika}");
                         }

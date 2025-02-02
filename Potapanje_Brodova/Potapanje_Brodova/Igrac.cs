@@ -22,6 +22,8 @@ namespace Potapanje_Brodova
 
         public bool PrethodniPogodak {  get; set; }
 
+        public bool izgubio { get; set; }
+
         public Igrac(Socket socket,int id, int dimenzija)
         {
             this.socket = socket;
@@ -32,6 +34,7 @@ namespace Potapanje_Brodova
             matricaGadjana = new int[dimenzija, dimenzija];
             this.ime = ime;
             this.PrethodniPogodak = true;
+            this.izgubio = false;
         }
         public void DodajPodmornice(List<int> pozicije,string ime)
         {
