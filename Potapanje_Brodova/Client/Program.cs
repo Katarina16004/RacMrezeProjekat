@@ -234,8 +234,18 @@ namespace Server
                         else
                             Console.WriteLine("Nepostojece ime. Pokusajte ponovo.");
                     }
+
                     //saljemo prvo ime protivnika
                     byte[] imeData = Encoding.UTF8.GetBytes(napadnuti);
+
+                    //dokle god ne promasi ili ga ne eliminise
+                    //TO DO ubaciti da sve ispod u petlju da bi trajali potezi
+                    bool kraj = false;
+                    while (!kraj)
+                    {
+                        kraj = napadaj();
+                    }
+                   
                     try
                     {
                         clientSocket.Send(imeData);
@@ -256,7 +266,6 @@ namespace Server
                     int polje = 0;
                     while (true)
                     {
-                        
                         Console.WriteLine($"Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
                         if (int.TryParse(Console.ReadLine(), out polje) && polje >= 1 && polje <= velTable * velTable)
                         {
@@ -300,6 +309,11 @@ namespace Server
                 Console.WriteLine($"Greska u konekciji! {e}");
                 zatvoriTCPKonenciju();
             }
+        }
+
+        private static bool napadaj()
+        {
+            throw new NotImplementedException();
         }
 
         private static string PrimiPoruku()

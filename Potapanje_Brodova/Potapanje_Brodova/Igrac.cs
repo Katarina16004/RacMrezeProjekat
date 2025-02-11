@@ -20,7 +20,6 @@ namespace Potapanje_Brodova
 
         public int[,] matricaGadjana { get; set; } //matrica koja pamti poteze gadjanja
 
-        public bool PrethodniPogodak {  get; set; }
 
         public bool izgubio { get; set; }
 
@@ -33,7 +32,6 @@ namespace Potapanje_Brodova
             matrica = new int[dimenzija, dimenzija];
             matricaGadjana = new int[dimenzija, dimenzija];
             this.ime = ime;
-            this.PrethodniPogodak = true;
             this.izgubio = false;
         }
         public void DodajPodmornice(List<int> pozicije,string ime)

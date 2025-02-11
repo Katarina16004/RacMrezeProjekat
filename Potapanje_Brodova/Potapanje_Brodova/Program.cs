@@ -325,8 +325,8 @@ namespace Server
 
                     if (krajPartije)
                     {
-                        //ObjaviKrajPartije();
-                        //GlasanjeNovaIgra();
+                        ObjaviKrajPartije();
+                        GlasanjeNovaIgra();
                         return;
                     }
                 }
@@ -523,18 +523,14 @@ namespace Server
                     //zavrsena i ceka rezultat. On do kraja partije ne moze da gadja nikoga, niti iko njega (zadatak 8)
 
                     trenutniIgrac.brojPromasaja++;
-                    trenutniIgrac.PrethodniPogodak = false;
                     info = $"\nBroj uzastopnih gresaka do sad je " +
-                    $"{trenutniIgrac.brojPromasaja}, maksimalan broj je: {MaxUzastopnihGresaka}\n";
-                    //+ "Odaberite polje koje napadate:";
-                    krajPoteza = true;
+                    $"{trenutniIgrac.brojPromasaja}, maksimalan broj je: {MaxUzastopnihGresaka}\n"
+                    + "Odaberite polje koje napadate:";
                     
                     if (trenutniIgrac.brojPromasaja == MaxUzastopnihGresaka)
                     {
-                        trenutniIgrac.brojPromasaja = 0;
-                        trenutniIgrac.PrethodniPogodak = true;
                         trenutniIgrac.izgubio = true;
-                        return;
+                        krajPoteza = true;
                     }
                 }
                 //Ako je pogodak
@@ -545,20 +541,16 @@ namespace Server
 
                     info = $"\nPreostalo brodova protivniku je: {Protivnik.pozicije.Count}\n ";
 
-                    trenutniIgrac.PrethodniPogodak = true;
+
                     if (Protivnik.pozicije.Count == 0)
                     {
                         //napada nekog od preostalih, ako ih ima
-
-                        /*krajPoteza = true;
-                        krajPartije = true;
-                        ObjaviKrajPartije();
-                        GlasanjeNovaIgra();*/ //kraj partije je kada ostane samo jedan igrac s podmornicama
+                        krajPoteza = true;
+                        Protivnik.izgubio=true;
                     }
                     else
                     {
-                        //info += "Odaberite polje koje gadjate:";
-                        //napadniProtivnika
+                        info += "Odaberite polje koje gadjate:";
                     }
                 }
                 byte[] message = Encoding.UTF8.GetBytes(poruka + info);
@@ -579,7 +571,7 @@ namespace Server
                 string sledecePoljeZaNapad = CekajNaPotez(trenutniIgrac);
                 int.TryParse(sledecePoljeZaNapad, out GadjajPolje);
 
-            } while (trenutniIgrac.brojPromasaja < MaxUzastopnihGresaka || !krajPoteza);
+            } while (!krajPoteza);
 
         }
 
