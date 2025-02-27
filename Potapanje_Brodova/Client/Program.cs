@@ -188,58 +188,70 @@ namespace Server
             string message = null;
             try
             {
-                while (true) 
+                while (true)
                 {
                     message = PrimiPoruku();
-                    if (message.Contains("Kraj"))
+                    Console.WriteLine(message);
+                    if (message.Contains("Kraj") || message.Contains("Izaberi") || message.Contains("Sacekajte"))
                     {
-                        GlasajNovaPartija();
-                    }
-                    else if (message.Contains("Izaberi"))
-                    {
-                        Console.WriteLine(message);
-                        string[] linije = message.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                        List<string> dostupniIgraci = new List<string>();
-
-                        foreach (string linija in linije)
+                        if (message.Contains("Kraj"))
                         {
-                            if (linija.StartsWith("\t->"))
+                            GlasajNovaPartija();
+                        }
+                        else if (message.Contains("Izaberi"))
+                        {
+                            string[] linije = message.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                            List<string> dostupniIgraci = new List<string>();
+
+                            foreach (string linija in linije)
                             {
-                                string ime = linija.Substring(3).Trim();
-                                dostupniIgraci.Add(ime);
+                                if (linija.StartsWith("\t->"))
+                                {
+                                    string ime = linija.Substring(3).Trim();
+                                    dostupniIgraci.Add(ime);
+                                }
+                            }
+                            /*Console.WriteLine("Imena dostupnih igraca: ");
+                            for (int i = 0; i < dostupniIgraci.Count; i++)
+                            {
+                                Console.WriteLine(dostupniIgraci[i]);
+                            }*/
+                            //odabir protivnika
+                            string napadnuti = "";
+                            while (true)
+                            {
+                                Console.Out.Flush();
+                                Console.WriteLine("Unesite ime protivnika kog zelite da napadnete:");
+                                napadnuti = Console.ReadLine();
+                                if (dostupniIgraci.Contains(napadnuti))
+                                    break;
+                                else
+                                    Console.WriteLine("Nepostojece ime. Pokusajte ponovo.");
+                            }
+
+                            //saljemo prvo ime protivnika
+                            PosaljiPoruku(napadnuti);
+
+                            bool pogodio = true;
+                            while (pogodio)
+                            {
+                                pogodio = Napadaj(); // ako vrati true, znači pogodio, nastavlja da igra
                             }
                         }
-                        Console.WriteLine("Imena dostupnih igraca: ");
-                        for (int i = 0; i < dostupniIgraci.Count; i++)
+                        else
                         {
-                            Console.WriteLine(dostupniIgraci[i]);
-                        }
-                        //odabir protivnika
-                        string napadnuti = "";
-                        while (true)
-                        {
-                            Console.WriteLine("Unesite ime protivnika kog zelite da napadnete:");
-                            napadnuti = Console.ReadLine();
-                            if (dostupniIgraci.Contains(napadnuti))
-                                break;
-                            else
-                                Console.WriteLine("Nepostojece ime. Pokusajte ponovo.");
-                        }
+                            //Console.WriteLine("Cekaj na svoj red...");
+                            while (true)
+                            {
+                                string ishod = PrimiPoruku();
+                                Console.WriteLine(ishod);
 
-                        //saljemo prvo ime protivnika
-                        PosaljiPoruku(napadnuti);
-
-                        //dokle god ne promasi ili ga ne eliminise
-                        bool kraj = false;
-                        while (!kraj)
-                            kraj = Napadaj();
+                                if (ishod.Contains("Promasaj")) // 
+                                    break;
+                            }
+                        }
                     }
-                    else
-                    {
-                        Console.WriteLine("Cekaj na svoj red...");
-                        string ishod = PrimiPoruku();
-                        Console.WriteLine(ishod);
-                    }
+                    
                 }
             }
             catch (SocketException e)
@@ -256,43 +268,34 @@ namespace Server
 
         private static bool Napadaj()
         {
-            //primamo od servera stanje table gadjanja
-            string tablaGadjanja = PrimiPoruku();
-            Console.WriteLine("Dosadasnja gadjanja protivnicke table: \n" + tablaGadjanja);
-            string poruka;
+            Console.WriteLine("Dosadasnja gadjanja protivnicke table:\n" + PrimiPoruku()); 
 
             //odabir polja
-            int polje = 0;
-            
-            while (true)
+            int polje;
+            do
             {
                 Console.WriteLine($"Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
-                if (int.TryParse(Console.ReadLine(), out polje) && polje >= 1 && polje <= velTable * velTable)
-                {
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine($"Unesite broj izmedju 1 i {velTable * velTable}");
-                }
-            }
+            } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
 
             PosaljiPoruku(polje.ToString());
 
-            //ishod
-            poruka = PrimiPoruku();
-            Console.WriteLine(poruka);
-
-            //prikaz table
-            string tabla = PrimiPoruku();
-            Console.WriteLine(tabla);  
-
-            if (poruka.Contains("Pogodak"))
+            string poruka;
+            while ((poruka = PrimiPoruku()).Contains("gadjano"))
             {
-                return false; 
+                do
+                {
+                    Console.WriteLine($"Uneto polje je vec gadjano. Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
+                } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
+
+                PosaljiPoruku(polje.ToString());
             }
-            return true;
+
+            Console.WriteLine(poruka);
+            Console.WriteLine(PrimiPoruku()); //tabla
+
+            return poruka.Contains("Pogodak!");
         }
+
 
         private static void PosaljiPoruku(string poruka)
         {
@@ -300,11 +303,11 @@ namespace Server
             try
             {
                 clientSocket.Send(Data);
-                Console.WriteLine("Polje koje zelite da napadnete je uspesno poslato serveru");
+                Console.WriteLine("Poslato serveru");
             }
             catch (SocketException e)
             {
-                Console.WriteLine($"Greska prilikom slanja polja koje zelite da napadnete: {e.Message}");
+                Console.WriteLine($"Greska prilikom slanja poruke serveru: {e.Message}");
             }
 
         }
