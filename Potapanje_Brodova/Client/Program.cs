@@ -84,9 +84,9 @@ namespace Server
 
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint destination = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 60002);
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[200];
             buffer = Encoding.UTF8.GetBytes("PRIJAVA" + ime);
-            byte[] buffer2 = new byte[1024];
+            byte[] buffer2 = new byte[200];
 
             EndPoint posiljaocEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 0);
 
@@ -97,8 +97,8 @@ namespace Server
                 do
                 {
                     int primljena = socket.ReceiveFrom(buffer2, ref posiljaocEP);
-                    poruka = Encoding.UTF8.GetString(buffer2);
-                    Console.WriteLine(poruka.TrimEnd());
+                    poruka = Encoding.UTF8.GetString(buffer2); 
+                    Console.WriteLine(poruka.TrimEnd(' '));
 
                 } while (!poruka.Contains("SPREMAN") && !poruka.Contains("Neuspesno"));
 
@@ -192,66 +192,66 @@ namespace Server
                 {
                     message = PrimiPoruku();
                     Console.WriteLine(message);
-                    if (message.Contains("Kraj") || message.Contains("Izaberi") || message.Contains("Sacekajte"))
+                    if (message.Contains("Kraj"))
                     {
-                        if (message.Contains("Kraj"))
-                        {
                             GlasajNovaPartija();
-                        }
-                        else if (message.Contains("Izaberi"))
+                    }
+                    else if (message.Contains("Izaberi"))
+                    {
+                        string[] linije = message.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        List<string> dostupniIgraci = new List<string>();
+
+                        foreach (string linija in linije)
                         {
-                            string[] linije = message.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                            List<string> dostupniIgraci = new List<string>();
-
-                            foreach (string linija in linije)
+                            if (linija.StartsWith("\t->"))
                             {
-                                if (linija.StartsWith("\t->"))
-                                {
-                                    string ime = linija.Substring(3).Trim();
-                                    dostupniIgraci.Add(ime);
-                                }
-                            }
-                            /*Console.WriteLine("Imena dostupnih igraca: ");
-                            for (int i = 0; i < dostupniIgraci.Count; i++)
-                            {
-                                Console.WriteLine(dostupniIgraci[i]);
-                            }*/
-                            //odabir protivnika
-                            string napadnuti = "";
-                            while (true)
-                            {
-                                Console.Out.Flush();
-                                Console.WriteLine("Unesite ime protivnika kog zelite da napadnete:");
-                                napadnuti = Console.ReadLine();
-                                if (dostupniIgraci.Contains(napadnuti))
-                                    break;
-                                else
-                                    Console.WriteLine("Nepostojece ime. Pokusajte ponovo.");
-                            }
-
-                            //saljemo prvo ime protivnika
-                            PosaljiPoruku(napadnuti);
-
-                            bool pogodio = true;
-                            while (pogodio)
-                            {
-                                pogodio = Napadaj(); // ako vrati true, znači pogodio, nastavlja da igra
+                                string ime = linija.Substring(3).Trim();
+                                dostupniIgraci.Add(ime);
                             }
                         }
-                        else
+                        /*Console.WriteLine("Imena dostupnih igraca: ");
+                        for (int i = 0; i < dostupniIgraci.Count; i++)
                         {
-                            //Console.WriteLine("Cekaj na svoj red...");
-                            while (true)
-                            {
-                                string ishod = PrimiPoruku();
-                                Console.WriteLine(ishod);
+                            Console.WriteLine(dostupniIgraci[i]);
+                        }*/
+                        //odabir protivnika
+                        if(dostupniIgraci.Count == 0)
+                        {
+                            Console.WriteLine("POBEDA!");
+                        }
+                        string napadnuti = "";
+                        while (true)
+                        {
+                            Console.Out.Flush();
+                            Console.WriteLine("Unesite ime protivnika kog zelite da napadnete:");
+                            napadnuti = Console.ReadLine();
+                            if (dostupniIgraci.Contains(napadnuti))
+                                break;
+                            else
+                                Console.WriteLine("Nepostojece ime. Pokusajte ponovo.");
+                        }
 
-                                if (ishod.Contains("Promasaj")) // 
-                                    break;
-                            }
+                        //saljemo prvo ime protivnika
+                        PosaljiPoruku(napadnuti);
+
+                        bool pogodio = true;
+                        while (pogodio)
+                        {
+                            pogodio = Napadaj(); // ako vrati true, znači pogodio, nastavlja da igra
                         }
                     }
-                    
+                    else
+                    {
+                        //Console.WriteLine("Cekaj na svoj red...");
+                        while (true)
+                        {
+                            string ishod = PrimiPoruku();
+                            Console.WriteLine(ishod);
+
+                            if (ishod.Contains("Promasaj")) 
+                                break;
+                        }
+                    } 
                 }
             }
             catch (SocketException e)
