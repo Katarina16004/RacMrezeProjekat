@@ -266,8 +266,10 @@ namespace Server
             Console.WriteLine("Stigli smo do glasanja za novu partiju!");
         }
 
+        //Razdvojiti glasanje za novu partiju!
         private static bool Napadaj()
         {
+
             Console.WriteLine("Dosadasnja gadjanja protivnicke table:\n" + PrimiPoruku()); 
 
             //odabir polja

@@ -291,6 +291,12 @@ namespace Server
                     Igrac protivnik = null;
                     ObavestiIgrace(igracNaPotezu);
 
+                    if (krajPartije)
+                    {
+                        GlasanjeNovaIgra();
+                        return;
+                    }
+
                     //potez trenutnog igraca
                     string imeProtivnika;
                     do
@@ -324,12 +330,6 @@ namespace Server
                         PosaljiTabluGadjanja(igracNaPotezu, protivnik);
 
                     } while (!krajPoteza); //dok se pogadja polje igra isti igrac
-
-                    if (krajPartije)
-                    {
-                        GlasanjeNovaIgra();
-                        return;
-                    }
                 }
                 trenutniIgrac = (trenutniIgrac + 1) % Igraci.Count;
             } while (!krajPartije);
@@ -383,6 +383,7 @@ namespace Server
 
         private static void ObjaviKrajPartije(Igrac pobednik)
         {
+            krajPartije = true;
             string poruka = "Kraj partije! Igrac" + pobednik.ime + "je pobedio!";
             foreach (Igrac i in Igraci)
             {
@@ -397,7 +398,7 @@ namespace Server
                     Console.WriteLine($"Greska pri slanju poruke igracu {i.ime}: {ex.Message}");
                 }
             }
-            krajPartije=true;
+           
         }
         private static void ObavestiIgrace(Igrac igracNaPotezu)
         {
@@ -418,7 +419,11 @@ namespace Server
                         }                           
                     }
                     if (dostupnihIgraca == 0)
+                    {
                         ObjaviKrajPartije(i);
+                        return;
+                    }
+                        
                 }
                 else
                 {
