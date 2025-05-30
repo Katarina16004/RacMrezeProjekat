@@ -21,7 +21,6 @@ namespace Server
         public static Socket clientSocket = null;
         private static int brojPodmornica = 0;
         private static int velTable = 0;
-        private static bool izgubio = false;
 
         static void Main(string[] args)
         {
@@ -29,7 +28,7 @@ namespace Server
             PrikaziMeni();
 
             UspostaviTCPKonekciju();
-            zatvoriTCPKonenciju();
+            ZatvoriTCPKonenciju();
 
             Console.ReadKey();
         }
@@ -146,7 +145,7 @@ namespace Server
                     if (++brPokusaja == 10)
                     {
                         Console.WriteLine("Neuspeno povezivanje na server");
-                        zatvoriTCPKonenciju();
+                        ZatvoriTCPKonenciju();
                         break;
                     }
                 }
@@ -165,7 +164,7 @@ namespace Server
             catch (SocketException e)
             {
                 Console.WriteLine($"Greska u konekciji! {e}");
-                zatvoriTCPKonenciju();
+                ZatvoriTCPKonenciju();
             }
 
             //slanje podmornica severu
@@ -257,7 +256,7 @@ namespace Server
             catch (SocketException e)
             {
                 Console.WriteLine($"Greska u konekciji! {e}");
-                zatvoriTCPKonenciju();
+                ZatvoriTCPKonenciju();
             }
         }
 
@@ -270,7 +269,14 @@ namespace Server
         private static bool Napadaj()
         {
 
-            Console.WriteLine("Dosadasnja gadjanja protivnicke table:\n" + PrimiPoruku()); 
+            string poruka = PrimiPoruku();
+            if (poruka.Contains("Kraj"))
+            {
+                GlasajNovaPartija();
+                return false;
+            } 
+
+            Console.WriteLine("Dosadasnja gadjanja protivnicke table:\n" + poruka); 
 
             //odabir polja
             int polje;
@@ -281,7 +287,7 @@ namespace Server
 
             PosaljiPoruku(polje.ToString());
 
-            string poruka;
+            
             while ((poruka = PrimiPoruku()).Contains("gadjano"))
             {
                 do
@@ -328,7 +334,7 @@ namespace Server
             catch (SocketException e)
             {
                 Console.WriteLine($"Greska u konekciji! {e}");
-                zatvoriTCPKonenciju();
+                ZatvoriTCPKonenciju();
             }
             return message;
         }
@@ -393,7 +399,7 @@ namespace Server
             return pozicije;
         }
 
-        private static void zatvoriTCPKonenciju()
+        private static void ZatvoriTCPKonenciju()
         {
             Console.ReadKey();
             Console.WriteLine("Klijent zavrsava sa radom");

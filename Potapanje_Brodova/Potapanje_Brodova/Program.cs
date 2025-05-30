@@ -384,7 +384,7 @@ namespace Server
         private static void ObjaviKrajPartije(Igrac pobednik)
         {
             krajPartije = true;
-            string poruka = "Kraj partije! Igrac" + pobednik.ime + "je pobedio!";
+            string poruka = "Kraj partije! Igrac " + pobednik.ime + " je pobedio!";
             foreach (Igrac i in Igraci)
             {
                 try
