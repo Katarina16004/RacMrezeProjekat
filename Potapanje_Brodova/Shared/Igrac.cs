@@ -7,7 +7,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Potapanje_Brodova
+namespace Shared
 {
     public class Igrac
     {

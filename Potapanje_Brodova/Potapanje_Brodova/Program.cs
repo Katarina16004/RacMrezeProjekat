@@ -5,9 +5,10 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Potapanje_Brodova;
 using System.Security;
 using System.Threading;
+using Shared;
+
 
 namespace Server
 {
@@ -16,6 +17,7 @@ namespace Server
         private static List<Klijent> Klijenti = new List<Klijent>();
         private static List<Igrac> Igraci = new List<Igrac>();
         private static List<Socket> readySockets = null;
+        Poruka p = new Poruka();
 
         private static List<Socket> clientSockets = null;
 
@@ -615,6 +617,41 @@ namespace Server
                     }
                 }
             }
+        }
+
+        private static void PosaljiPoruku(Igrac NaPotezu, Igrac Napadnut, TipPoruke tip, string poruka)
+        {
+            Poruka p = new Poruka(NaPotezu, Napadnut, tip, poruka);
+            try
+            {
+                clientSocket.Send(p.SerializujPoruku());
+                Console.WriteLine("Poslato serveru");
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine($"Greska prilikom slanja poruke serveru: {e.Message}");
+            }
+
+        }
+
+
+        private static string PrimiPoruku()
+        {
+            string message = null;
+            try
+            {
+                Poruka p = new Poruka();
+                byte[] dataBuffer = new byte[256];
+                int bytesRead = clientSocket.Receive(dataBuffer);
+                p = Poruka.DeserializujPoruku(dataBuffer);
+
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine($"Greska u konekciji! {e}");
+                ZatvoriTCPKonenciju();
+            }
+            return message;
         }
     }
 }

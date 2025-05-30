@@ -1,4 +1,7 @@
-﻿using System.Net;
+﻿using System.IO;
+using System;
+using System.Net;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Server
 {
@@ -17,5 +20,9 @@ namespace Server
         {
             return "\n" + Ime + " " + IPAdresa.ToString();
         }
+
+      
+        
+      
     }
 }

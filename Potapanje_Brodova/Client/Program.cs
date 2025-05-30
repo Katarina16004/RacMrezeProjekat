@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
-using System.Net.NetworkInformation;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Potapanje_Brodova;
+
 
 namespace Server
 {
@@ -172,7 +169,7 @@ namespace Server
             List<int> pozicije = UnosPodmornica();
 
             string PozicijeZaSlanje = ime + "|" + string.Join(",", pozicije);
-            PosaljiPoruku(PozicijeZaSlanje);
+            PosaljiPoruku(null,null,TipPoruke.PozicijeBrodova, PozicijeZaSlanje);
 
             //ispis table
             string tabla = PrimiPoruku();
@@ -234,7 +231,7 @@ namespace Server
                         }
 
                         //saljemo prvo ime protivnika
-                        PosaljiPoruku(napadnuti);
+                        PosaljiPoruku(null, null,TipPoruke.Ostalo, napadnuti);
 
                         bool pogodio = true;
                         while (pogodio)
@@ -288,6 +285,7 @@ namespace Server
                 Console.WriteLine($"Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
             } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
 
+            //TODO Dodati Igrac1 i 2
             PosaljiPoruku(polje.ToString());
 
             
@@ -298,6 +296,7 @@ namespace Server
                     Console.WriteLine($"Uneto polje je vec gadjano. Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
                 } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
 
+                //TODO Dodati Igrac1 i 2
                 PosaljiPoruku(polje.ToString());
             }
 
@@ -308,12 +307,12 @@ namespace Server
         }
 
 
-        private static void PosaljiPoruku(string poruka)
+        private static void PosaljiPoruku(Igrac NaPotezu,Igrac Napadnut, TipPoruke tip,string poruka)
         {
-            byte[] Data = Encoding.UTF8.GetBytes(poruka);
+            Poruka p = new Poruka(NaPotezu,Napadnut,tip,poruka);
             try
             {
-                clientSocket.Send(Data);
+                clientSocket.Send(p.SerializujPoruku());
                 Console.WriteLine("Poslato serveru");
             }
             catch (SocketException e)
@@ -329,9 +328,10 @@ namespace Server
             string message = null;
             try
             {
+                Poruka p = new Poruka();
                 byte[] dataBuffer = new byte[256];
                 int bytesRead = clientSocket.Receive(dataBuffer);
-                message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                p = Poruka.DeserializujPoruku(dataBuffer);                
 
             }
             catch (SocketException e)
