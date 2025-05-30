@@ -22,6 +22,7 @@ namespace Server
         private static int brojPodmornica = 0;
         private static int velTable = 0;
 
+
         static void Main(string[] args)
         {
             Console.WriteLine("Pozdrav od Clienta");
@@ -182,6 +183,8 @@ namespace Server
             //pocetak igre
             IgrajPartiju();
         }
+
+        //Potrebno je da se prati koliko je preostalo podmornica u svakom trenutku!
         private static void IgrajPartiju()
         {
             string message = null;
