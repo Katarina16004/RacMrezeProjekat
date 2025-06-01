@@ -13,8 +13,12 @@ namespace Shared
     {
         PozicijeBrodova,
         Napad,
+        Napadnut,
+        Preskocen,
+        Izgubio,
         Greska,
         Obavestenje,
+        GlasanjeNova,
         Ostalo
 
     }

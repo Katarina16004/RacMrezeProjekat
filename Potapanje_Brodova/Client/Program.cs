@@ -182,27 +182,26 @@ namespace Server
             PrikaziTablu(tabla);
 
             //pocetak igre
-            //IgrajPartiju();
+             IgrajPartiju();
         }
 
         //Potrebno je da se prati koliko je preostalo podmornica u svakom trenutku!
-        /*
+        
         private static void IgrajPartiju()
         {
-            string message = null;
             try
             {
                 while (true)
                 {
-                    //message = PrimiPoruku();
-                    Console.WriteLine(message);
-                    if (message.Contains("Kraj"))
+                    Poruka p = new Poruka();
+                    p = PrimiPoruku();
+                    if(p.tipPoruke == TipPoruke.GlasanjeNova)
                     {
-                            GlasajNovaPartija();
+                        GlasajNovaPartija();
                     }
-                    else if (message.Contains("Izaberi"))
+                    else if(p.tipPoruke == TipPoruke.Napad)
                     {
-                        string[] linije = message.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        string[] linije = p.poruka.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
                         List<string> dostupniIgraci = new List<string>();
 
                         foreach (string linija in linije)
@@ -217,9 +216,10 @@ namespace Server
                         for (int i = 0; i < dostupniIgraci.Count; i++)
                         {
                             Console.WriteLine(dostupniIgraci[i]);
-                        }//Ovde dodatik kraj komentara
+                        }*/
+
                         //odabir protivnika
-                        if(dostupniIgraci.Count == 0)
+                        if (dostupniIgraci.Count == 0)
                         {
                             Console.WriteLine("POBEDA!");
                         }
@@ -236,26 +236,35 @@ namespace Server
                         }
 
                         //saljemo prvo ime protivnika
-                        PosaljiPoruku(null, null,TipPoruke.Ostalo, napadnuti);
+                        PosaljiPoruku(null, null, TipPoruke.Ostalo, napadnuti);
 
                         bool pogodio = true;
                         while (pogodio)
                         {
-                            pogodio = Napadaj(); // ako vrati true, znači pogodio, nastavlja da igra
+                            pogodio = Napadaj();
                         }
                     }
-                    else
+                    else if(p.tipPoruke == TipPoruke.Preskocen)
+                    {
+                        Odbrana();
+                    }
+                    else if(p.tipPoruke == TipPoruke.Preskocen)
                     {
                         //Console.WriteLine("Cekaj na svoj red...");
                         while (true)
                         {
-                            //string ishod = PrimiPoruku();
-                            Console.WriteLine(ishod);
+                            Poruka ishod = new Poruka();
+                             ishod = PrimiPoruku();
+                            Console.WriteLine(ishod.poruka);
 
-                            if (ishod.Contains("Promasaj")) 
+                            if (ishod.tipPoruke != TipPoruke.Preskocen)
                                 break;
                         }
-                    } 
+                    }
+                    else
+                    {
+                        ZatvoriTCPKonenciju();
+                    }
                 }
             }
             catch (SocketException e)
@@ -264,17 +273,23 @@ namespace Server
                 ZatvoriTCPKonenciju();
             }
         }
-        */
+
+        //TODO
+        private static void Odbrana()
+        {
+            throw new NotImplementedException();
+        }
+
         private static void GlasajNovaPartija()
         {
             Console.WriteLine("Stigli smo do glasanja za novu partiju!");
         }
 
         //Razdvojiti glasanje za novu partiju!
-        /*
+       
         private static bool Napadaj()
         {
-
+            /*
             string poruka = PrimiPoruku();
             if (poruka.Contains("Kraj"))
             {
@@ -309,9 +324,10 @@ namespace Server
             Console.WriteLine(poruka);
             Console.WriteLine(PrimiPoruku()); //tabla
 
-            return poruka.Contains("Pogodak!");
+            return poruka.Contains("Pogodak!"); */
+            return false;
         }
-        */
+
 
         private static void PosaljiPoruku(Igrac NaPotezu,Igrac Napadnut, TipPoruke tip,string poruka)
         {
