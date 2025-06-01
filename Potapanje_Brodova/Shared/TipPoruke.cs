@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 
 namespace Shared
 {
+
+    [Serializable]
     public enum TipPoruke
     {
-        SlanjeBrodova,
+        PozicijeBrodova,
         Napad,
         Greska,
+        Obavestenje,
         Ostalo
 
     }

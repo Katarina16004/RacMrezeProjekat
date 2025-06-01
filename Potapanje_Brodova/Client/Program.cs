@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using Potapanje_Brodova;
+using Shared;
 
 
 namespace Server
@@ -150,11 +150,14 @@ namespace Server
             }
 
             //primanje informacija o igri
+            Poruka p = new Poruka();
+
             try
             {
-                string message = PrimiPoruku();
-                Console.WriteLine("Primljena poruka: " + message);
-                string[] delovi = message.Split(' ');
+              
+                p = PrimiPoruku();
+                Console.WriteLine("Primljena poruka: " + p.poruka);
+                string[] delovi = p.poruka.Split(' ');
                 brojPodmornica = int.Parse(delovi[delovi.Length - 1]);
                 string velTableS = delovi[2].Remove(delovi[2].Length - 1);
                 velTable = int.Parse(velTableS);
@@ -169,19 +172,21 @@ namespace Server
             List<int> pozicije = UnosPodmornica();
 
             string PozicijeZaSlanje = ime + "|" + string.Join(",", pozicije);
-            PosaljiPoruku(null,null,TipPoruke.PozicijeBrodova, PozicijeZaSlanje);
+            Igrac prazan = new Igrac();
+            PosaljiPoruku(prazan,prazan,TipPoruke.PozicijeBrodova, PozicijeZaSlanje);
 
             //ispis table
-            string tabla = PrimiPoruku();
-            byte[] bytes = Encoding.ASCII.GetBytes(tabla);
-            int duzina = bytes.Length;
-            PrikaziTablu(bytes,duzina);
+
+            p = PrimiPoruku();
+            int[,] tabla = Igrac.PretvoriStringUMatricu(p.poruka);
+            PrikaziTablu(tabla);
 
             //pocetak igre
-            IgrajPartiju();
+            //IgrajPartiju();
         }
 
         //Potrebno je da se prati koliko je preostalo podmornica u svakom trenutku!
+        /*
         private static void IgrajPartiju()
         {
             string message = null;
@@ -189,7 +194,7 @@ namespace Server
             {
                 while (true)
                 {
-                    message = PrimiPoruku();
+                    //message = PrimiPoruku();
                     Console.WriteLine(message);
                     if (message.Contains("Kraj"))
                     {
@@ -212,7 +217,7 @@ namespace Server
                         for (int i = 0; i < dostupniIgraci.Count; i++)
                         {
                             Console.WriteLine(dostupniIgraci[i]);
-                        }*/
+                        }//Ovde dodatik kraj komentara
                         //odabir protivnika
                         if(dostupniIgraci.Count == 0)
                         {
@@ -244,7 +249,7 @@ namespace Server
                         //Console.WriteLine("Cekaj na svoj red...");
                         while (true)
                         {
-                            string ishod = PrimiPoruku();
+                            //string ishod = PrimiPoruku();
                             Console.WriteLine(ishod);
 
                             if (ishod.Contains("Promasaj")) 
@@ -259,13 +264,14 @@ namespace Server
                 ZatvoriTCPKonenciju();
             }
         }
-
+        */
         private static void GlasajNovaPartija()
         {
             Console.WriteLine("Stigli smo do glasanja za novu partiju!");
         }
 
         //Razdvojiti glasanje za novu partiju!
+        /*
         private static bool Napadaj()
         {
 
@@ -305,14 +311,14 @@ namespace Server
 
             return poruka.Contains("Pogodak!");
         }
-
+        */
 
         private static void PosaljiPoruku(Igrac NaPotezu,Igrac Napadnut, TipPoruke tip,string poruka)
         {
             Poruka p = new Poruka(NaPotezu,Napadnut,tip,poruka);
             try
             {
-                clientSocket.Send(p.SerializujPoruku());
+                clientSocket.Send(p.Serializuj());
                 Console.WriteLine("Poslato serveru");
             }
             catch (SocketException e)
@@ -323,13 +329,13 @@ namespace Server
         }
 
 
-        private static string PrimiPoruku()
+        private static Poruka PrimiPoruku()
         {
-            string message = null;
+            Poruka p = new Poruka();
             try
             {
-                Poruka p = new Poruka();
-                byte[] dataBuffer = new byte[256];
+             
+                byte[] dataBuffer = new byte[40806];
                 int bytesRead = clientSocket.Receive(dataBuffer);
                 p = Poruka.DeserializujPoruku(dataBuffer);                
 
@@ -339,17 +345,12 @@ namespace Server
                 Console.WriteLine($"Greska u konekciji! {e}");
                 ZatvoriTCPKonenciju();
             }
-            return message;
+            return p;
         }
 
-        private static void PrikaziTablu(byte[] SerijalizovanaMatrica, int duzina)
+        private static void PrikaziTablu(int[,] matrica)
         {
-            int[,] matrica;
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream(SerijalizovanaMatrica, 0, duzina))
-            {
-                matrica = (int[,])formatter.Deserialize(ms);
-            }
+
             Console.WriteLine("Stanje vase table: ");
             Console.Write("\t");
             for (int i = 0; i < matrica.GetLength(0); i++)

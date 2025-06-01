@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Shared
 {
+    [Serializable]
     public class Poruka
     {
         public Igrac NaPotezu { get; set; }
@@ -38,7 +39,7 @@ namespace Shared
             }
         }
 
-        public Poruka DeserializujPoruku(byte[] bytes)
+        public static Poruka DeserializujPoruku(byte[] bytes)
         {
             using (MemoryStream ms = new MemoryStream(bytes))
             {

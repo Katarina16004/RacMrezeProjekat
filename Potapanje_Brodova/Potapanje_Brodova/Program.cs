@@ -184,13 +184,17 @@ namespace Server
             // slanje informacija o igri klijentima
             int brPodmornica = VelicinaTable * VelicinaTable - MaxUzastopnihGresaka;
             string info = $"Velicina table: {VelicinaTable}, maksimalan broj gresaka: {MaxUzastopnihGresaka}, broj podmornica: {brPodmornica}";
-            byte[] infoMessage = Encoding.UTF8.GetBytes(info);
+
+
 
             foreach (Socket clientSocket in clientSockets)
             {
+
+                Igrac i = new Igrac(Igraci.Find(igrac => igrac.socket == clientSocket));
+                Poruka p = new Poruka(i, null, TipPoruke.Obavestenje, info);          
                 try
                 {
-                    clientSocket.Send(infoMessage);
+                    clientSocket.Send(p.Serializuj());
                     Console.WriteLine($"Poruka poslata klijentu: {clientSocket.RemoteEndPoint}");
                 }
                 catch (SocketException ex)
@@ -225,10 +229,12 @@ namespace Server
 
                         if (messLength > 0)
                         {
-                            string poruka = Encoding.UTF8.GetString(buffer, 0, messLength);
-                            string[] delovi = poruka.Split('|');
+                            
+                            Poruka p = new Poruka();
+                            p = Poruka.DeserializujPoruku(buffer);
+                            string[] delovi = p.poruka.Split('|');
                             string ime = delovi[0];
-                            poruka = delovi[1];
+                            string poruka = delovi[1];
                             Console.WriteLine($"Podmornice od {ime}: {poruka}");
                             string[] pozS = poruka.Split(',');
                             List<int> listaPoz = new List<int>();
@@ -267,17 +273,20 @@ namespace Server
 
         private static void PosaljiKlijentimaTable()
         {
-            foreach (Igrac i in Igraci)
+            foreach (Igrac igrac in Igraci)
             {
                 try
                 {
-                    byte[] poruka = i.SerijalizujMatricu();
-                    i.socket.Send(poruka);
-                    Console.WriteLine($"Poruka poslata klijentu: {i.ime} u {i.socket.RemoteEndPoint}");
+                   
+                    //Pretvaranje matrice u string
+
+                    Poruka p = new Poruka(null,null,TipPoruke.Obavestenje,igrac.PretvoriUString());
+                    igrac.socket.Send(p.Serializuj());
+                    Console.WriteLine($"Poruka poslata klijentu: {igrac.ime} u {igrac.socket.RemoteEndPoint}");
                 }
                 catch (SocketException ex)
                 {
-                    Console.WriteLine($"Greska pri slanju poruke klijentu {i.ime}: {ex.Message}");
+                    Console.WriteLine($"Greska pri slanju poruke klijentu {igrac.ime}: {ex.Message}");
                 }
             }
         }
@@ -617,41 +626,6 @@ namespace Server
                     }
                 }
             }
-        }
-
-        private static void PosaljiPoruku(Igrac NaPotezu, Igrac Napadnut, TipPoruke tip, string poruka)
-        {
-            Poruka p = new Poruka(NaPotezu, Napadnut, tip, poruka);
-            try
-            {
-                clientSocket.Send(p.SerializujPoruku());
-                Console.WriteLine("Poslato serveru");
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine($"Greska prilikom slanja poruke serveru: {e.Message}");
-            }
-
-        }
-
-
-        private static string PrimiPoruku()
-        {
-            string message = null;
-            try
-            {
-                Poruka p = new Poruka();
-                byte[] dataBuffer = new byte[256];
-                int bytesRead = clientSocket.Receive(dataBuffer);
-                p = Poruka.DeserializujPoruku(dataBuffer);
-
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine($"Greska u konekciji! {e}");
-                ZatvoriTCPKonenciju();
-            }
-            return message;
         }
     }
 }

@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 
 namespace Shared
 {
+    [Serializable]
     public class Igrac
     {
-        public Socket socket {  get; set; }
+
+        [NonSerialized] public Socket socket;
         public int id { get;}
         public string ime { get; set; }
         public int brojPromasaja { get; set; }
@@ -23,6 +25,11 @@ namespace Shared
 
         public bool izgubio { get; set; }
 
+        public Igrac()
+        {
+
+        }
+       
         public Igrac(Socket socket,int id, int dimenzija)
         {
             this.socket = socket;
@@ -34,6 +41,31 @@ namespace Shared
             this.ime = ime;
             this.izgubio = false;
         }
+        public Igrac(Igrac original)
+        {
+
+            this.socket = null; 
+            this.id = original.id;
+            this.ime = original.ime;
+            this.brojPromasaja = original.brojPromasaja;
+            this.pozicije = new List<int>(original.pozicije);
+
+            int dimX = original.matrica.GetLength(0);
+            int dimY = original.matrica.GetLength(1);
+
+            this.matrica = new int[dimX, dimY];
+            this.matricaGadjana = new int[dimX, dimY];
+
+            for (int i = 0; i < dimX; i++)
+            {
+                for (int j = 0; j < dimY; j++)
+                {
+                    this.matrica[i, j] = original.matrica[i, j];
+                    this.matricaGadjana[i, j] = original.matricaGadjana[i, j];
+                }
+            }
+        }
+
         public void DodajPodmornice(List<int> pozicije,string ime)
         {
             this.pozicije = pozicije;
@@ -117,16 +149,30 @@ namespace Shared
             return s;
         }
 
-        public  byte[] SerijalizujMatricu()
+        public  string PretvoriUString()
         {
-            byte[] serializedMatrix;
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream())
+            string strMatrica = string.Join(";", Enumerable.Range(0, matrica.GetLength(0))
+                    .Select(i => string.Join(",", Enumerable.Range(0, matrica.GetLength(1))
+                    .Select(j => matrica[i, j]))));
+            return strMatrica;
+        }
+
+        public static int[,] PretvoriStringUMatricu(string ulaz)
+        {
+            string[] redovi = ulaz.Split(';', (char)StringSplitOptions.RemoveEmptyEntries);
+            int brRedova = redovi.Length;
+            int brKolona = redovi[0].Split(',', (char)StringSplitOptions.RemoveEmptyEntries).Length;
+            int[,] matrica = new int[brRedova, brKolona];
+
+            for (int i = 0; i < brRedova; i++)
             {
-                formatter.Serialize(ms, matrica);
-                serializedMatrix = ms.ToArray(); 
+                string[] kolone = redovi[i].Split(',',(char) StringSplitOptions.RemoveEmptyEntries);
+                for (int j = 0; j < brKolona; j++)
+                {
+                    matrica[i, j] = int.Parse(kolone[j]);
+                }
             }
-            return serializedMatrix;
+            return matrica;
         }
     }
 }
