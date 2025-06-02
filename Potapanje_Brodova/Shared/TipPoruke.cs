@@ -19,6 +19,11 @@ namespace Shared
         Greska,
         Obavestenje,
         GlasanjeNova,
+        Pogodak,
+        Promasaj,
+        Ponovi,
+        NovaPartija,
+        Kraj,
         Ostalo
 
     }
