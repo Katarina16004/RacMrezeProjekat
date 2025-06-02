@@ -194,13 +194,15 @@ namespace Server
                 while (true)
                 {
                     Poruka p = new Poruka();
-                    p = PrimiPoruku();
-                    if(p.tipPoruke == TipPoruke.GlasanjeNova)
+                    p =PrimiPoruku();
+
+                    if (p.tipPoruke == TipPoruke.GlasanjeNova)
                     {
                         GlasajNovaPartija();
                     }
-                    else if(p.tipPoruke == TipPoruke.Napad)
+                    else if (p.tipPoruke == TipPoruke.Napad)
                     {
+
                         string[] linije = p.poruka.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
                         List<string> dostupniIgraci = new List<string>();
 
@@ -212,22 +214,23 @@ namespace Server
                                 dostupniIgraci.Add(ime);
                             }
                         }
-                        /*Console.WriteLine("Imena dostupnih igraca: ");
-                        for (int i = 0; i < dostupniIgraci.Count; i++)
-                        {
-                            Console.WriteLine(dostupniIgraci[i]);
-                        }*/
 
                         //odabir protivnika
                         if (dostupniIgraci.Count == 0)
                         {
                             Console.WriteLine("POBEDA!");
+                            break;
                         }
+
                         string napadnuti = "";
                         while (true)
                         {
                             Console.Out.Flush();
-                            Console.WriteLine("Unesite ime protivnika kog zelite da napadnete:");
+                            Console.WriteLine(linije[0]);
+                            for (int i = 0; i < dostupniIgraci.Count; i++)
+                            {
+                                Console.WriteLine("->   " + dostupniIgraci[i]);
+                            }
                             napadnuti = Console.ReadLine();
                             if (dostupniIgraci.Contains(napadnuti))
                                 break;
@@ -244,22 +247,26 @@ namespace Server
                             pogodio = Napadaj();
                         }
                     }
-                    else if(p.tipPoruke == TipPoruke.Preskocen)
+                    else if (p.tipPoruke == TipPoruke.Napadnut)
                     {
                         Odbrana();
                     }
-                    else if(p.tipPoruke == TipPoruke.Preskocen)
+                    else if (p.tipPoruke == TipPoruke.Preskocen)
                     {
                         //Console.WriteLine("Cekaj na svoj red...");
                         while (true)
                         {
                             Poruka ishod = new Poruka();
-                             ishod = PrimiPoruku();
+                            ishod = PrimiPoruku();
                             Console.WriteLine(ishod.poruka);
 
                             if (ishod.tipPoruke != TipPoruke.Preskocen)
                                 break;
                         }
+                    }
+                    else if (p.tipPoruke == TipPoruke.Obavestenje)
+                    {
+                        Console.WriteLine(p.poruka);
                     }
                     else
                     {
@@ -277,6 +284,7 @@ namespace Server
         //TODO
         private static void Odbrana()
         {
+            Console.WriteLine("Stigli smo do polja odbrana");
             throw new NotImplementedException();
         }
 
@@ -289,6 +297,7 @@ namespace Server
        
         private static bool Napadaj()
         {
+            Console.WriteLine("Stigli smo do polja za napad");
             /*
             string poruka = PrimiPoruku();
             if (poruka.Contains("Kraj"))

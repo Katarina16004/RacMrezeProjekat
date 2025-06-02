@@ -300,8 +300,9 @@ namespace Server
                 if(!igracNaPotezu.izgubio)
                 {
                     Igrac protivnik = null;
-                    ObavestiIgrace(igracNaPotezu);
+                    ObavestiIgraceONapadacu(igracNaPotezu);
 
+                    //TODO
                     if (krajPartije)
                     {
                         GlasanjeNovaIgra();
@@ -411,7 +412,7 @@ namespace Server
             }
            
         }
-        private static void ObavestiIgrace(Igrac igracNaPotezu)
+        private static void ObavestiIgraceONapadacu(Igrac igracNaPotezu)
         {
             foreach (Igrac i in Igraci)
             {
@@ -441,12 +442,12 @@ namespace Server
                     poruka = $"\n{igracNaPotezu.ime} je na potezu. Sacekajte..";
                 }
 
-                byte[] message = Encoding.UTF8.GetBytes(poruka);
-
                 try
                 {
-                    i.socket.Send(message);
-                    Console.WriteLine($"Poruka poslata igracu {i.ime}: {poruka}");
+                    Poruka p = new Poruka(null,null, i == igracNaPotezu ? TipPoruke.Napad : TipPoruke.Obavestenje,poruka);
+                    Console.WriteLine("Sadrzaj poruku je: " + p.poruka);
+                    i.socket.Send(p.Serializuj());
+                    Console.WriteLine($"Poruka poslata igracu {i.ime}: {p.poruka}");
                 }
                 catch (SocketException ex)
                 {
