@@ -213,6 +213,7 @@ namespace Server
 
                     if (p.tipPoruke == TipPoruke.GlasanjeNova)
                     {
+                        Console.WriteLine(p.poruka);
                         GlasajNovaPartija();
                     }
                     else if (p.tipPoruke == TipPoruke.Napad)
