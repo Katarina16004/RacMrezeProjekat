@@ -34,8 +34,13 @@ namespace Server
         {
 
             Console.WriteLine("Dobrodosli na server!");
-            Console.WriteLine("Unesite broj igraca koji ce da igraju:");
-            int.TryParse(Console.ReadLine(), out MaxBrojIgraca);
+            do 
+            {
+                Console.WriteLine("Unesite broj igraca koji ce da igraju:");
+                int.TryParse(Console.ReadLine(), out MaxBrojIgraca);
+            }
+            while (MaxBrojIgraca < 1) ;
+
             Console.WriteLine("Cekam prijave Igraca:");
 
             UcitajIgrace();
@@ -146,10 +151,17 @@ namespace Server
         private static void UnesiParametreIgre()
         {
             Console.WriteLine("Svi igraci su spremni za igru!");
-            Console.WriteLine("Unesite dimenziju table:");
-            int.TryParse((string)Console.ReadLine(), out VelicinaTable);
-            Console.WriteLine("Unesite maksimalan broj uzastopnih gresaka:");
-            int.TryParse((string)Console.ReadLine(), out MaxUzastopnihGresaka);
+            do
+            {
+                Console.WriteLine("Unesite dimenziju table:");
+                int.TryParse((string)Console.ReadLine(), out VelicinaTable);
+            }
+            while (VelicinaTable < 0);
+            do
+            {
+                Console.WriteLine("Unesite maksimalan broj uzastopnih gresaka:");
+                int.TryParse((string)Console.ReadLine(), out MaxUzastopnihGresaka);
+            } while (MaxUzastopnihGresaka > VelicinaTable * VelicinaTable - 1);
         }
 
         //Uspostavljanje TCP konekcije sa svim igracima, slanje informacija o igri,

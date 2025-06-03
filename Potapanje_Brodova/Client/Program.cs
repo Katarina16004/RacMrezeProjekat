@@ -68,8 +68,12 @@ namespace Server
 
         static void UnesiIme()
         {
-            Console.WriteLine("Unesite svoje ime:");
-            ime = Console.ReadLine();
+            do
+            {
+                Console.WriteLine("Unesite svoje ime:");
+                ime = Console.ReadLine();
+            } while (ime == string.Empty); 
+
             Console.WriteLine("Ucitavanje...");
             Thread.Sleep(1000);
 
