@@ -174,5 +174,20 @@ namespace Shared
             }
             return matrica;
         }
+
+        public void ResetujIgraca()
+        {
+            brojPromasaja = 0;
+            pozicije.Clear();
+            for (int i = 0; i < matrica.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrica.GetLength(1); j++)
+                {
+                    matrica[i, j] = 0;
+                    matricaGadjana[i, j] = 0;
+                }
+            }
+            izgubio = false;
+        }
     }
 }

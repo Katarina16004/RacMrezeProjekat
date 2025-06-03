@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Shared;
 using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.Remoting.Messaging;
 
 
 namespace Server
@@ -20,6 +21,7 @@ namespace Server
         private static int brojPodmornica = 0;
         private static int velTable = 0;
         public static bool PrvaPartija = true;
+        public static int MaxUzastopnihGresaka = 0;
 
         static void Main(string[] args)
         {
@@ -123,7 +125,6 @@ namespace Server
         {
             if(PrvaPartija == true)
             {
-                Thread.Sleep(1000);
                 clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
                 byte[] buffer = new byte[1024];
@@ -159,12 +160,17 @@ namespace Server
 
             try
             {
-              
+
+
+               
+
                 p = PrimiPoruku();
                 Console.WriteLine("Primljena poruka: " + p.poruka);
                 string[] delovi = p.poruka.Split(' ');
                 brojPodmornica = int.Parse(delovi[delovi.Length - 1]);
+
                 string velTableS = delovi[2].Remove(delovi[2].Length - 1);
+                MaxUzastopnihGresaka = int.Parse(delovi[6]);
                 velTable = int.Parse(velTableS);
             }
             catch (SocketException e)
@@ -286,7 +292,6 @@ namespace Server
             }
         }
 
-        //TODO
         private static void Odbrana(Igrac i,string poruka)
         {
             Console.WriteLine(poruka);
@@ -331,7 +336,6 @@ namespace Server
         //Razdvojiti glasanje za novu partiju!
         private static bool Napadaj()
         {
-            Console.WriteLine("Stigli smo do polja za napad");
             Poruka p = new Poruka();
             
             p = PrimiPoruku();
@@ -363,7 +367,7 @@ namespace Server
                     {
                         do
                         {
-                            Console.WriteLine($"Uneto polje je već gađano. Unesite koje polje želite da gađate (1-{velTable * velTable}):");
+                            Console.WriteLine($"Uneto polje je vec gadjano. Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
                         } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
 
                         PosaljiPoruku(null, null, TipPoruke.Napad, polje.ToString());
@@ -371,25 +375,31 @@ namespace Server
                     else if(p.tipPoruke == TipPoruke.Pogodak)
                     {
                         Console.WriteLine(p.poruka);
-
                         break;
                     }
+                    else if (p.tipPoruke == TipPoruke.Promasaj)
+                    {
+                        Console.WriteLine(p.poruka);
+                        break;
+                    }
+                    else if(p.tipPoruke == TipPoruke.Izgubio)
+                    {
+                        Console.WriteLine("Izgubio si posto si pogresio maksimalni broj puta!");
+                        p = PrimiPoruku();//Da bi se zavrsio ceo ciklus poslace table i par obavestenja, nepotrebna da se prikazu, al ipak mora da ih primi
+                        p = PrimiPoruku();//
+                        p= PrimiPoruku();//
+                        Console.WriteLine(p.poruka);
+                        GlasajNovaPartija();
+                    }
+
 
                 } while (p.tipPoruke == TipPoruke.Ponovi);
 
-                bool PonovnoGadjanje;
-                if (p.Napadnut.pozicije.Count == 0 || p.tipPoruke != TipPoruke.Pogodak )
-                {
-                    PonovnoGadjanje = false;
-                }
-                else
-                {
-                    PonovnoGadjanje= true;
-                }
+
                 p = PrimiPoruku();
                 Console.WriteLine(p.poruka); //tabla
 
-                return PonovnoGadjanje;
+                return true;
             }
             else
             {

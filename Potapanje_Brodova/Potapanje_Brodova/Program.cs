@@ -28,6 +28,7 @@ namespace Server
         private static bool NovaIgra = true;
         private static bool krajPartije = false;
         private static int rezultatGadjanja;
+        private static bool PrvaPartija = true;
 
         static void Main(string[] args)
         {
@@ -181,15 +182,13 @@ namespace Server
                 }
             }
 
-           
-
         }
 
         private static void IncijalizujTable()
         {
             // slanje informacija o igri klijentima
             int brPodmornica = VelicinaTable * VelicinaTable - MaxUzastopnihGresaka;
-            string info = $"Velicina table: {VelicinaTable}, maksimalan broj gresaka: {MaxUzastopnihGresaka}, broj podmornica: {brPodmornica}";
+            string info = $"Velicina table: {VelicinaTable}, maksimalan broj gresaka: {MaxUzastopnihGresaka} broj podmornica: {brPodmornica}";
 
 
 
@@ -201,7 +200,7 @@ namespace Server
                 try
                 {
                     clientSocket.Send(p.Serializuj());
-                    Console.WriteLine($"Poruka poslata klijentu: {clientSocket.RemoteEndPoint}");
+                    Console.WriteLine($"Poruka poslata klijentu: {i.ime}");
                 }
                 catch (SocketException ex)
                 {
@@ -340,8 +339,10 @@ namespace Server
                             krajPoteza = NapadniProtivnika(igracNaPotezu, imeProtivnika, polje);
                         } while (rezultatGadjanja==0);
 
-                        PosaljiTabluGadjanja(igracNaPotezu, protivnik);
-                        Console.WriteLine("Poslata tablica gadjanja: " + protivnik.PrikaziMatricuGadjana());
+
+                         PosaljiTabluGadjanja(igracNaPotezu, protivnik);
+                         Console.WriteLine("Poslata tablica gadjanja: " + protivnik.PrikaziMatricuGadjana());
+                      
 
                     } while (!krajPoteza); //dok se pogadja polje igra isti igrac
                 }
@@ -523,27 +524,32 @@ namespace Server
             {
 
                 p.tipPoruke = TipPoruke.Kraj;
-                foreach (Igrac i in Igraci)
-                {
-                    try
-                    {
-                        i.socket.Send(p.Serializuj());
-                        Console.WriteLine($"Poruka poslata igracu {i.ime}: Kraj");
-                    }
-                    catch (SocketException ex)
-                    {
-                        Console.WriteLine($"Greska pri slanju poruke igracu {i.ime}: {ex.Message}");
-                    }
-                }
+              
                 Console.WriteLine("Program se zavrsava sa radom, pritisnite bilo koje dugme da ga ugasite!");
-                Console.ReadKey();
-                Environment.Exit(0);
+
             }
             else
             {
+                krajPartije = false;
                 Thread.Sleep(1000);
+                p.tipPoruke = TipPoruke.Ostalo;
                 Console.WriteLine("Pokrecemo novu partiju");
             }
+
+            foreach (Igrac i in Igraci)
+            {
+                i.ResetujIgraca();
+                try
+                {
+                    i.socket.Send(p.Serializuj());
+                    Console.WriteLine($"Poruka poslata igracu {i.ime}: Kraj");
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine($"Greska pri slanju poruke igracu {i.ime}: {ex.Message}");
+                }
+            }
+            if(NovaIgra == false ) Environment.Exit(0);
         }
 
         //Igrac napada dok ne napravi Maksimalan broj uzastopnih gresaka ili dok ne pobedi
@@ -577,10 +583,11 @@ namespace Server
                     p.tipPoruke = TipPoruke.Promasaj;
                     if (trenutniIgrac.brojPromasaja == MaxUzastopnihGresaka)
                     {
+                        p.tipPoruke = TipPoruke.Izgubio;
                         trenutniIgrac.izgubio = true;
                         krajPoteza=true;
                     }
-                    
+
                     break;
                 case 2: //kada napadac potopi podmornicu protivniku, dobija sansu da gadja opet. Ukoliko je potopio sve podmornice, dobija sledeci potez
                         //da gadja nekog preostalog. (ili tu moze da se zavrsi njegov potez zbog jednostavnosti)
@@ -594,9 +601,10 @@ namespace Server
                     poruka = "Greska!";
                     break;
             }
-            p.Napadnut = new Igrac(Protivnik);
+
             p.poruka = poruka + info;
-          
+            p.NaPotezu = new Igrac(trenutniIgrac);
+            p.Napadnut = new Igrac(Protivnik);
 
             //Posalji poruku Igracu kako je prosao potez
             try
