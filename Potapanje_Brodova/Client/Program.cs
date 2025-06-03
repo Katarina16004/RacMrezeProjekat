@@ -1,15 +1,11 @@
-﻿using System;
+﻿using Shared;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using Shared;
-using static System.Net.Mime.MediaTypeNames;
-using System.Runtime.Remoting.Messaging;
+using System.Text;
+using System.Threading;
 
 
 namespace Server
@@ -72,7 +68,7 @@ namespace Server
             {
                 Console.WriteLine("Unesite svoje ime:");
                 ime = Console.ReadLine();
-            } while (ime == string.Empty); 
+            } while (ime == string.Empty);
 
             Console.WriteLine("Ucitavanje...");
             Thread.Sleep(1000);
@@ -101,7 +97,7 @@ namespace Server
                 do
                 {
                     int primljena = socket.ReceiveFrom(buffer2, ref posiljaocEP);
-                    poruka = Encoding.UTF8.GetString(buffer2); 
+                    poruka = Encoding.UTF8.GetString(buffer2);
                     Console.WriteLine(poruka.TrimEnd(' '));
 
                 } while (!poruka.Contains("SPREMAN") && !poruka.Contains("Neuspesno"));
@@ -127,7 +123,7 @@ namespace Server
         //Uspostavljanje TCP konekcije sa serverom, prijem informacija o igri, slanje pozicija svojih podmornica
         private static void UspostaviTCPKonekciju()
         {
-            if(PrvaPartija == true)
+            if (PrvaPartija == true)
             {
                 clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
@@ -166,7 +162,7 @@ namespace Server
             {
 
 
-               
+
 
                 p = PrimiPoruku();
                 Console.WriteLine("Primljena poruka: " + p.poruka);
@@ -188,7 +184,7 @@ namespace Server
 
             string PozicijeZaSlanje = ime + "|" + string.Join(",", pozicije);
             Igrac prazan = new Igrac();
-            PosaljiPoruku(prazan,prazan,TipPoruke.PozicijeBrodova, PozicijeZaSlanje);
+            PosaljiPoruku(prazan, prazan, TipPoruke.PozicijeBrodova, PozicijeZaSlanje);
 
             //ispis table
 
@@ -197,11 +193,11 @@ namespace Server
             PrikaziTablu(tabla);
 
             //pocetak igre
-             IgrajPartiju();
+            IgrajPartiju();
         }
 
         //Potrebno je da se prati koliko je preostalo podmornica u svakom trenutku!
-        
+
         private static void IgrajPartiju()
         {
             try
@@ -209,7 +205,7 @@ namespace Server
                 while (true)
                 {
                     Poruka p = new Poruka();
-                    p =PrimiPoruku();
+                    p = PrimiPoruku();
 
                     if (p.tipPoruke == TipPoruke.GlasanjeNova)
                     {
@@ -297,11 +293,11 @@ namespace Server
             }
         }
 
-        private static void Odbrana(Igrac i,string poruka)
+        private static void Odbrana(Igrac i, string poruka)
         {
             Console.WriteLine(poruka);
             int preostaloBrodova = i.pozicije.Count;
-            if(preostaloBrodova ==0)
+            if (preostaloBrodova == 0)
             {
                 Console.WriteLine("Izgubio si partiju sacekaj da ostali igraci zavrse, nakon toga bice glasanje za novu partiju!");
             }
@@ -322,10 +318,10 @@ namespace Server
             {
                 int.TryParse(Console.ReadLine(), out x);
             } while (x != 1 && x != 2);
-            
-            PosaljiPoruku(null,null,TipPoruke.Obavestenje,x.ToString());
+
+            PosaljiPoruku(null, null, TipPoruke.Obavestenje, x.ToString());
             p = PrimiPoruku(); // Proveravamo sta je server rekao
-            if(p.tipPoruke == TipPoruke.Kraj)
+            if (p.tipPoruke == TipPoruke.Kraj)
             {
                 Console.WriteLine("Neko od igraca je odbio da nastavi, program se zavrsava s radom, pritisnite ENTER da ugasite program");
                 ZatvoriTCPKonenciju();
@@ -342,14 +338,14 @@ namespace Server
         private static bool Napadaj()
         {
             Poruka p = new Poruka();
-            
+
             p = PrimiPoruku();
             if (p.tipPoruke == TipPoruke.GlasanjeNova)
             {
                 GlasajNovaPartija();
                 return false;
             }
-            else if(p.tipPoruke==TipPoruke.Ostalo)
+            else if (p.tipPoruke == TipPoruke.Ostalo)
             {
                 Console.WriteLine("Dosadasnja gadjanja protivnicke table:\n" + p.poruka);
 
@@ -361,7 +357,7 @@ namespace Server
                 } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
 
 
-                PosaljiPoruku(null,null,TipPoruke.Napad,polje.ToString());
+                PosaljiPoruku(null, null, TipPoruke.Napad, polje.ToString());
 
 
                 do
@@ -377,7 +373,7 @@ namespace Server
 
                         PosaljiPoruku(null, null, TipPoruke.Napad, polje.ToString());
                     }
-                    else if(p.tipPoruke == TipPoruke.Pogodak)
+                    else if (p.tipPoruke == TipPoruke.Pogodak)
                     {
                         Console.WriteLine(p.poruka);
                         break;
@@ -387,12 +383,12 @@ namespace Server
                         Console.WriteLine(p.poruka);
                         break;
                     }
-                    else if(p.tipPoruke == TipPoruke.Izgubio)
+                    else if (p.tipPoruke == TipPoruke.Izgubio)
                     {
                         Console.WriteLine("Izgubio si posto si pogresio maksimalni broj puta!");
                         p = PrimiPoruku();//Da bi se zavrsio ceo ciklus poslace table i par obavestenja, nepotrebna da se prikazu, al ipak mora da ih primi
                         p = PrimiPoruku();//
-                        p= PrimiPoruku();//
+                        p = PrimiPoruku();//
                         Console.WriteLine(p.poruka);
                         GlasajNovaPartija();
                     }
@@ -413,9 +409,9 @@ namespace Server
         }
 
 
-        private static void PosaljiPoruku(Igrac NaPotezu,Igrac Napadnut, TipPoruke tip,string poruka)
+        private static void PosaljiPoruku(Igrac NaPotezu, Igrac Napadnut, TipPoruke tip, string poruka)
         {
-            Poruka p = new Poruka(NaPotezu,Napadnut,tip,poruka);
+            Poruka p = new Poruka(NaPotezu, Napadnut, tip, poruka);
             try
             {
                 clientSocket.Send(p.Serializuj());
@@ -434,10 +430,10 @@ namespace Server
             Poruka p = new Poruka();
             try
             {
-             
+
                 byte[] dataBuffer = new byte[40806];
                 int bytesRead = clientSocket.Receive(dataBuffer);
-                p = Poruka.DeserializujPoruku(dataBuffer);                
+                p = Poruka.DeserializujPoruku(dataBuffer);
 
             }
             catch (SocketException e)

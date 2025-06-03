@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Shared
 {
@@ -14,7 +10,7 @@ namespace Shared
     {
 
         [NonSerialized] public Socket socket;
-        public int id { get;}
+        public int id { get; }
         public string ime { get; set; }
         public int brojPromasaja { get; set; }
         public List<int> pozicije { get; set; } //korisnik salje pozicije (1-dim)
@@ -29,8 +25,8 @@ namespace Shared
         {
 
         }
-       
-        public Igrac(Socket socket,int id, int dimenzija)
+
+        public Igrac(Socket socket, int id, int dimenzija)
         {
             this.socket = socket;
             this.id = id;
@@ -44,7 +40,7 @@ namespace Shared
         public Igrac(Igrac original)
         {
 
-            this.socket = null; 
+            this.socket = null;
             this.id = original.id;
             this.ime = original.ime;
             this.brojPromasaja = original.brojPromasaja;
@@ -66,7 +62,7 @@ namespace Shared
             }
         }
 
-        public void DodajPodmornice(List<int> pozicije,string ime)
+        public void DodajPodmornice(List<int> pozicije, string ime)
         {
             this.pozicije = pozicije;
             this.ime = ime;
@@ -79,9 +75,9 @@ namespace Shared
             {
                 int i = (pozicija - 1) / matrica.GetLength(0);
                 int j = (pozicija - 1) % matrica.GetLength(1);
-                matrica[i,j] = 1;
+                matrica[i, j] = 1;
             }
-           
+
         }
 
         public int AzurirajMatricu(int gadjanaPoz) //salje se pozicija (1-dim) koju protivnik gadja
@@ -117,7 +113,7 @@ namespace Shared
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
                 {
-                    if (matricaGadjana[i,j] == 0)
+                    if (matricaGadjana[i, j] == 0)
                         s = s + "- ";
                     else if (matricaGadjana[i, j] == 1)
                         s = s + "+ ";
@@ -130,7 +126,7 @@ namespace Shared
         }
         public string PrikaziMatricu()
         {
-            string s="\t";
+            string s = "\t";
             for (int i = 0; i < matrica.GetLength(0); i++)
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
@@ -149,7 +145,7 @@ namespace Shared
             return s;
         }
 
-        public  string PretvoriUString()
+        public string PretvoriUString()
         {
             string strMatrica = string.Join(";", Enumerable.Range(0, matrica.GetLength(0))
                     .Select(i => string.Join(",", Enumerable.Range(0, matrica.GetLength(1))
@@ -166,7 +162,7 @@ namespace Shared
 
             for (int i = 0; i < brRedova; i++)
             {
-                string[] kolone = redovi[i].Split(',',(char) StringSplitOptions.RemoveEmptyEntries);
+                string[] kolone = redovi[i].Split(',', (char)StringSplitOptions.RemoveEmptyEntries);
                 for (int j = 0; j < brKolona; j++)
                 {
                     matrica[i, j] = int.Parse(kolone[j]);
