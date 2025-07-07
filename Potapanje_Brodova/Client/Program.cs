@@ -1,17 +1,12 @@
-﻿using System;
+﻿using Shared;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
-using System.Net.NetworkInformation;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using System.Threading;
+
 
 namespace Server
 {
@@ -21,7 +16,8 @@ namespace Server
         public static Socket clientSocket = null;
         private static int brojPodmornica = 0;
         private static int velTable = 0;
-
+        public static bool PrvaPartija = true;
+        public static int MaxUzastopnihGresaka = 0;
 
         static void Main(string[] args)
         {
@@ -68,8 +64,12 @@ namespace Server
 
         static void UnesiIme()
         {
-            Console.WriteLine("Unesite svoje ime:");
-            ime = Console.ReadLine();
+            do
+            {
+                Console.WriteLine("Unesite svoje ime:");
+                ime = Console.ReadLine();
+            } while (ime == string.Empty);
+
             Console.WriteLine("Ucitavanje...");
             Thread.Sleep(1000);
 
@@ -97,7 +97,7 @@ namespace Server
                 do
                 {
                     int primljena = socket.ReceiveFrom(buffer2, ref posiljaocEP);
-                    poruka = Encoding.UTF8.GetString(buffer2); 
+                    poruka = Encoding.UTF8.GetString(buffer2);
                     Console.WriteLine(poruka.TrimEnd(' '));
 
                 } while (!poruka.Contains("SPREMAN") && !poruka.Contains("Neuspesno"));
@@ -123,43 +123,54 @@ namespace Server
         //Uspostavljanje TCP konekcije sa serverom, prijem informacija o igri, slanje pozicija svojih podmornica
         private static void UspostaviTCPKonekciju()
         {
-            Thread.Sleep(1000);
-            clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
-            byte[] buffer = new byte[1024];
-            Random random = new Random();
-            int brPokusaja = 0;
-
-            while (true)
+            if (PrvaPartija == true)
             {
-                try
+                clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                IPEndPoint ServerEP = new IPEndPoint(IPAddress.Parse("192.168.56.1"), 5001);
+                byte[] buffer = new byte[1024];
+                Random random = new Random();
+                int brPokusaja = 0;
+
+                while (true)
                 {
-                    clientSocket.Connect(ServerEP);
-                    Console.WriteLine("Connected to server.");
-                    break;
-                }
-                catch (SocketException e)
-                {
-                    Console.WriteLine($"SocketException: {e.Message}");
-                    Console.WriteLine("Pokusavam da se povezem na server...");
-                    Thread.Sleep(random.Next(10, 100));
-                    if (++brPokusaja == 10)
+                    try
                     {
-                        Console.WriteLine("Neuspeno povezivanje na server");
-                        ZatvoriTCPKonenciju();
+                        clientSocket.Connect(ServerEP);
+                        Console.WriteLine("Connected to server.");
                         break;
                     }
+                    catch (SocketException e)
+                    {
+                        Console.WriteLine($"SocketException: {e.Message}");
+                        Console.WriteLine("Pokusavam da se povezem na server...");
+                        Thread.Sleep(random.Next(10, 100));
+                        if (++brPokusaja == 10)
+                        {
+                            Console.WriteLine("Neuspeno povezivanje na server");
+                            ZatvoriTCPKonenciju();
+                            break;
+                        }
+                    }
                 }
+
             }
 
             //primanje informacija o igri
+            Poruka p = new Poruka();
+
             try
             {
-                string message = PrimiPoruku();
-                Console.WriteLine("Primljena poruka: " + message);
-                string[] delovi = message.Split(' ');
+
+
+
+
+                p = PrimiPoruku();
+                Console.WriteLine("Primljena poruka: " + p.poruka);
+                string[] delovi = p.poruka.Split(' ');
                 brojPodmornica = int.Parse(delovi[delovi.Length - 1]);
+
                 string velTableS = delovi[2].Remove(delovi[2].Length - 1);
+                MaxUzastopnihGresaka = int.Parse(delovi[6]);
                 velTable = int.Parse(velTableS);
             }
             catch (SocketException e)
@@ -172,35 +183,39 @@ namespace Server
             List<int> pozicije = UnosPodmornica();
 
             string PozicijeZaSlanje = ime + "|" + string.Join(",", pozicije);
-            PosaljiPoruku(PozicijeZaSlanje);
+            Igrac prazan = new Igrac();
+            PosaljiPoruku(prazan, prazan, TipPoruke.PozicijeBrodova, PozicijeZaSlanje);
 
             //ispis table
-            string tabla = PrimiPoruku();
-            byte[] bytes = Encoding.ASCII.GetBytes(tabla);
-            int duzina = bytes.Length;
-            PrikaziTablu(bytes,duzina);
+
+            p = PrimiPoruku();
+            int[,] tabla = Igrac.PretvoriStringUMatricu(p.poruka);
+            PrikaziTablu(tabla);
 
             //pocetak igre
             IgrajPartiju();
         }
 
         //Potrebno je da se prati koliko je preostalo podmornica u svakom trenutku!
+
         private static void IgrajPartiju()
         {
-            string message = null;
             try
             {
                 while (true)
                 {
-                    message = PrimiPoruku();
-                    Console.WriteLine(message);
-                    if (message.Contains("Kraj"))
+                    Poruka p = new Poruka();
+                    p = PrimiPoruku();
+
+                    if (p.tipPoruke == TipPoruke.GlasanjeNova)
                     {
-                            GlasajNovaPartija();
+                        Console.WriteLine(p.poruka);
+                        GlasajNovaPartija();
                     }
-                    else if (message.Contains("Izaberi"))
+                    else if (p.tipPoruke == TipPoruke.Napad)
                     {
-                        string[] linije = message.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        string[] linije = p.poruka.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
                         List<string> dostupniIgraci = new List<string>();
 
                         foreach (string linija in linije)
@@ -211,21 +226,23 @@ namespace Server
                                 dostupniIgraci.Add(ime);
                             }
                         }
-                        /*Console.WriteLine("Imena dostupnih igraca: ");
-                        for (int i = 0; i < dostupniIgraci.Count; i++)
-                        {
-                            Console.WriteLine(dostupniIgraci[i]);
-                        }*/
+
                         //odabir protivnika
-                        if(dostupniIgraci.Count == 0)
+                        if (dostupniIgraci.Count == 0)
                         {
                             Console.WriteLine("POBEDA!");
+                            break;
                         }
+
                         string napadnuti = "";
                         while (true)
                         {
                             Console.Out.Flush();
-                            Console.WriteLine("Unesite ime protivnika kog zelite da napadnete:");
+                            Console.WriteLine(linije[0]);
+                            for (int i = 0; i < dostupniIgraci.Count; i++)
+                            {
+                                Console.WriteLine("->   " + dostupniIgraci[i]);
+                            }
                             napadnuti = Console.ReadLine();
                             if (dostupniIgraci.Contains(napadnuti))
                                 break;
@@ -234,26 +251,39 @@ namespace Server
                         }
 
                         //saljemo prvo ime protivnika
-                        PosaljiPoruku(napadnuti);
+                        PosaljiPoruku(null, null, TipPoruke.Ostalo, napadnuti);
 
                         bool pogodio = true;
                         while (pogodio)
                         {
-                            pogodio = Napadaj(); // ako vrati true, znači pogodio, nastavlja da igra
+                            pogodio = Napadaj();
                         }
                     }
-                    else
+                    else if (p.tipPoruke == TipPoruke.Napadnut)
+                    {
+                        Odbrana(p.Napadnut, p.poruka);
+                    }
+                    else if (p.tipPoruke == TipPoruke.Preskocen)
                     {
                         //Console.WriteLine("Cekaj na svoj red...");
                         while (true)
                         {
-                            string ishod = PrimiPoruku();
-                            Console.WriteLine(ishod);
+                            Poruka ishod = new Poruka();
+                            ishod = PrimiPoruku();
+                            Console.WriteLine(ishod.poruka);
 
-                            if (ishod.Contains("Promasaj")) 
+                            if (ishod.tipPoruke != TipPoruke.Preskocen)
                                 break;
                         }
-                    } 
+                    }
+                    else if (p.tipPoruke == TipPoruke.Obavestenje)
+                    {
+                        Console.WriteLine(p.poruka);
+                    }
+                    else
+                    {
+                        ZatvoriTCPKonenciju();
+                    }
                 }
             }
             catch (SocketException e)
@@ -263,57 +293,128 @@ namespace Server
             }
         }
 
+        private static void Odbrana(Igrac i, string poruka)
+        {
+            Console.WriteLine(poruka);
+            int preostaloBrodova = i.pozicije.Count;
+            if (preostaloBrodova == 0)
+            {
+                Console.WriteLine("Izgubio si partiju sacekaj da ostali igraci zavrse, nakon toga bice glasanje za novu partiju!");
+            }
+            else
+            {
+                Console.WriteLine("Preostalo ti je: " + preostaloBrodova.ToString() + " brodova!");
+            }
+        }
+
         private static void GlasajNovaPartija()
         {
             Console.WriteLine("Stigli smo do glasanja za novu partiju!");
+            Poruka p = new Poruka();
+            p = PrimiPoruku();
+            Console.WriteLine(p.poruka);
+            int x;
+            do
+            {
+                int.TryParse(Console.ReadLine(), out x);
+            } while (x != 1 && x != 2);
+
+            PosaljiPoruku(null, null, TipPoruke.Obavestenje, x.ToString());
+            p = PrimiPoruku(); // Proveravamo sta je server rekao
+            if (p.tipPoruke == TipPoruke.Kraj)
+            {
+                Console.WriteLine("Neko od igraca je odbio da nastavi, program se zavrsava s radom, pritisnite ENTER da ugasite program");
+                ZatvoriTCPKonenciju();
+                Environment.Exit(0);
+            }
+            else
+            {
+                PrvaPartija = false;
+                UspostaviTCPKonekciju();
+            }
         }
 
         //Razdvojiti glasanje za novu partiju!
         private static bool Napadaj()
         {
+            Poruka p = new Poruka();
 
-            string poruka = PrimiPoruku();
-            if (poruka.Contains("Kraj"))
+            p = PrimiPoruku();
+            if (p.tipPoruke == TipPoruke.GlasanjeNova)
             {
                 GlasajNovaPartija();
                 return false;
-            } 
-
-            Console.WriteLine("Dosadasnja gadjanja protivnicke table:\n" + poruka); 
-
-            //odabir polja
-            int polje;
-            do
+            }
+            else if (p.tipPoruke == TipPoruke.Ostalo)
             {
-                Console.WriteLine($"Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
-            } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
+                Console.WriteLine("Dosadasnja gadjanja protivnicke table:\n" + p.poruka);
 
-            PosaljiPoruku(polje.ToString());
-
-            
-            while ((poruka = PrimiPoruku()).Contains("gadjano"))
-            {
+                //odabir polja
+                int polje;
                 do
                 {
-                    Console.WriteLine($"Uneto polje je vec gadjano. Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
+                    Console.WriteLine($"Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
                 } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
 
-                PosaljiPoruku(polje.ToString());
+
+                PosaljiPoruku(null, null, TipPoruke.Napad, polje.ToString());
+
+
+                do
+                {
+                    p = PrimiPoruku();
+                    //Ovo je stavljeno da bi se izbeglo izvrsavanje komande ponovi, na prvom pokusaju kad to nije potrebno
+                    if (p.tipPoruke == TipPoruke.Ponovi)
+                    {
+                        do
+                        {
+                            Console.WriteLine($"Uneto polje je vec gadjano. Unesite koje polje zelite da gadjate (1-{velTable * velTable}):");
+                        } while (!int.TryParse(Console.ReadLine(), out polje) || polje < 1 || polje > velTable * velTable);
+
+                        PosaljiPoruku(null, null, TipPoruke.Napad, polje.ToString());
+                    }
+                    else if (p.tipPoruke == TipPoruke.Pogodak)
+                    {
+                        Console.WriteLine(p.poruka);
+                        break;
+                    }
+                    else if (p.tipPoruke == TipPoruke.Promasaj)
+                    {
+                        Console.WriteLine(p.poruka);
+                        break;
+                    }
+                    else if (p.tipPoruke == TipPoruke.Izgubio)
+                    {
+                        Console.WriteLine("Izgubio si posto si pogresio maksimalni broj puta!");
+                        p = PrimiPoruku();//Da bi se zavrsio ceo ciklus poslace table i par obavestenja, nepotrebna da se prikazu, al ipak mora da ih primi
+                        p = PrimiPoruku();//
+                        p = PrimiPoruku();//
+                        Console.WriteLine(p.poruka);
+                        GlasajNovaPartija();
+                    }
+
+
+                } while (p.tipPoruke == TipPoruke.Ponovi);
+
+
+                p = PrimiPoruku();
+                Console.WriteLine(p.poruka); //tabla
+
+                return true;
             }
-
-            Console.WriteLine(poruka);
-            Console.WriteLine(PrimiPoruku()); //tabla
-
-            return poruka.Contains("Pogodak!");
+            else
+            {
+                return false;
+            }
         }
 
 
-        private static void PosaljiPoruku(string poruka)
+        private static void PosaljiPoruku(Igrac NaPotezu, Igrac Napadnut, TipPoruke tip, string poruka)
         {
-            byte[] Data = Encoding.UTF8.GetBytes(poruka);
+            Poruka p = new Poruka(NaPotezu, Napadnut, tip, poruka);
             try
             {
-                clientSocket.Send(Data);
+                clientSocket.Send(p.Serializuj());
                 Console.WriteLine("Poslato serveru");
             }
             catch (SocketException e)
@@ -324,14 +425,15 @@ namespace Server
         }
 
 
-        private static string PrimiPoruku()
+        private static Poruka PrimiPoruku()
         {
-            string message = null;
+            Poruka p = new Poruka();
             try
             {
-                byte[] dataBuffer = new byte[256];
+
+                byte[] dataBuffer = new byte[40806];
                 int bytesRead = clientSocket.Receive(dataBuffer);
-                message = Encoding.UTF8.GetString(dataBuffer, 0, bytesRead);
+                p = Poruka.DeserializujPoruku(dataBuffer);
 
             }
             catch (SocketException e)
@@ -339,17 +441,12 @@ namespace Server
                 Console.WriteLine($"Greska u konekciji! {e}");
                 ZatvoriTCPKonenciju();
             }
-            return message;
+            return p;
         }
 
-        private static void PrikaziTablu(byte[] SerijalizovanaMatrica, int duzina)
+        private static void PrikaziTablu(int[,] matrica)
         {
-            int[,] matrica;
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream(SerijalizovanaMatrica, 0, duzina))
-            {
-                matrica = (int[,])formatter.Deserialize(ms);
-            }
+
             Console.WriteLine("Stanje vase table: ");
             Console.Write("\t");
             for (int i = 0; i < matrica.GetLength(0); i++)

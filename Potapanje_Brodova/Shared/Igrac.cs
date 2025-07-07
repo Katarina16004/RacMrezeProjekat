@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Potapanje_Brodova
+namespace Shared
 {
+    [Serializable]
     public class Igrac
     {
-        public Socket socket {  get; set; }
-        public int id { get;}
+
+        [NonSerialized] public Socket socket;
+        public int id { get; }
         public string ime { get; set; }
         public int brojPromasaja { get; set; }
         public List<int> pozicije { get; set; } //korisnik salje pozicije (1-dim)
@@ -23,7 +21,12 @@ namespace Potapanje_Brodova
 
         public bool izgubio { get; set; }
 
-        public Igrac(Socket socket,int id, int dimenzija)
+        public Igrac()
+        {
+
+        }
+
+        public Igrac(Socket socket, int id, int dimenzija)
         {
             this.socket = socket;
             this.id = id;
@@ -34,7 +37,32 @@ namespace Potapanje_Brodova
             this.ime = ime;
             this.izgubio = false;
         }
-        public void DodajPodmornice(List<int> pozicije,string ime)
+        public Igrac(Igrac original)
+        {
+
+            this.socket = null;
+            this.id = original.id;
+            this.ime = original.ime;
+            this.brojPromasaja = original.brojPromasaja;
+            this.pozicije = new List<int>(original.pozicije);
+
+            int dimX = original.matrica.GetLength(0);
+            int dimY = original.matrica.GetLength(1);
+
+            this.matrica = new int[dimX, dimY];
+            this.matricaGadjana = new int[dimX, dimY];
+
+            for (int i = 0; i < dimX; i++)
+            {
+                for (int j = 0; j < dimY; j++)
+                {
+                    this.matrica[i, j] = original.matrica[i, j];
+                    this.matricaGadjana[i, j] = original.matricaGadjana[i, j];
+                }
+            }
+        }
+
+        public void DodajPodmornice(List<int> pozicije, string ime)
         {
             this.pozicije = pozicije;
             this.ime = ime;
@@ -47,9 +75,9 @@ namespace Potapanje_Brodova
             {
                 int i = (pozicija - 1) / matrica.GetLength(0);
                 int j = (pozicija - 1) % matrica.GetLength(1);
-                matrica[i,j] = 1;
+                matrica[i, j] = 1;
             }
-           
+
         }
 
         public int AzurirajMatricu(int gadjanaPoz) //salje se pozicija (1-dim) koju protivnik gadja
@@ -85,7 +113,7 @@ namespace Potapanje_Brodova
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
                 {
-                    if (matricaGadjana[i,j] == 0)
+                    if (matricaGadjana[i, j] == 0)
                         s = s + "- ";
                     else if (matricaGadjana[i, j] == 1)
                         s = s + "+ ";
@@ -98,7 +126,7 @@ namespace Potapanje_Brodova
         }
         public string PrikaziMatricu()
         {
-            string s="\t";
+            string s = "\t";
             for (int i = 0; i < matrica.GetLength(0); i++)
             {
                 for (int j = 0; j < matrica.GetLength(1); j++)
@@ -117,16 +145,45 @@ namespace Potapanje_Brodova
             return s;
         }
 
-        public  byte[] SerijalizujMatricu()
+        public string PretvoriUString()
         {
-            byte[] serializedMatrix;
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream())
+            string strMatrica = string.Join(";", Enumerable.Range(0, matrica.GetLength(0))
+                    .Select(i => string.Join(",", Enumerable.Range(0, matrica.GetLength(1))
+                    .Select(j => matrica[i, j]))));
+            return strMatrica;
+        }
+
+        public static int[,] PretvoriStringUMatricu(string ulaz)
+        {
+            string[] redovi = ulaz.Split(';', (char)StringSplitOptions.RemoveEmptyEntries);
+            int brRedova = redovi.Length;
+            int brKolona = redovi[0].Split(',', (char)StringSplitOptions.RemoveEmptyEntries).Length;
+            int[,] matrica = new int[brRedova, brKolona];
+
+            for (int i = 0; i < brRedova; i++)
             {
-                formatter.Serialize(ms, matrica);
-                serializedMatrix = ms.ToArray(); 
+                string[] kolone = redovi[i].Split(',', (char)StringSplitOptions.RemoveEmptyEntries);
+                for (int j = 0; j < brKolona; j++)
+                {
+                    matrica[i, j] = int.Parse(kolone[j]);
+                }
             }
-            return serializedMatrix;
+            return matrica;
+        }
+
+        public void ResetujIgraca()
+        {
+            brojPromasaja = 0;
+            pozicije.Clear();
+            for (int i = 0; i < matrica.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrica.GetLength(1); j++)
+                {
+                    matrica[i, j] = 0;
+                    matricaGadjana[i, j] = 0;
+                }
+            }
+            izgubio = false;
         }
     }
 }
