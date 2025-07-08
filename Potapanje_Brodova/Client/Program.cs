@@ -170,7 +170,7 @@ namespace Server
                 brojPodmornica = int.Parse(delovi[delovi.Length - 1]);
 
                 string velTableS = delovi[2].Remove(delovi[2].Length - 1);
-                MaxUzastopnihGresaka = int.Parse(delovi[6]);
+                MaxUzastopnihGresaka = int.Parse(delovi[7]);
                 velTable = int.Parse(velTableS);
             }
             catch (SocketException e)

@@ -198,7 +198,7 @@ namespace Server
         {
             // slanje informacija o igri klijentima
             int brPodmornica = VelicinaTable * VelicinaTable - MaxUzastopnihGresaka;
-            string info = $"Velicina table: {VelicinaTable}, maksimalan broj gresaka: {MaxUzastopnihGresaka} broj podmornica: {brPodmornica}";
+            string info = $"Velicina table: {VelicinaTable}, maksimalan broj uzastopnih gresaka: {MaxUzastopnihGresaka} broj podmornica: {brPodmornica}";
 
 
 
@@ -529,8 +529,7 @@ namespace Server
                     }
                 }
             }
-            //TODO Namestiti da krece partija ispocetka, i popraviti impute kod imena i unosenja dimenzija i max uzastopnih gresaka
-            if (NovaIgra == false)
+             if (NovaIgra == false)
             {
 
                 p.tipPoruke = TipPoruke.Kraj;
